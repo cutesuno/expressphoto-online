@@ -1,22 +1,30 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import '../i18n';
+import { useState } from 'react';
 
 export default function Home() {
-  const { t, i18n } = useTranslation();
-  const [form, setForm] = useState({ name: '', email: '', details: '' });
-  const [loading, setLoading] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    details: '',
+  });
   const [file, setFile] = useState<File | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
+  const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
 
-  const handleChange = (e: any) => setForm({ ...form, [e.target.name]: e.target.value });
-  const toggleLang = () => i18n.changeLanguage(i18n.language === 'uk' ? 'pl' : 'uk');
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  const handleSubmit = async (e: any) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
     const formData = new FormData();
     formData.append('name', form.name);
     formData.append('email', form.email);
@@ -27,16 +35,30 @@ export default function Home() {
       method: 'POST',
       body: formData,
     });
-
-    setLoading(false);
     setConfirmed(true);
   };
 
+  const toggleLang = () => setLanguage(language === 'uk' ? 'pl' : 'uk');
+
+  const t = (key: string) => {
+    const dict: any = {
+      intro: {
+        uk: 'Онлайн-друк, фото на документи, ксерокопії та більше',
+        pl: 'Druk online, zdjęcia do dokumentów, kserokopie i więcej',
+      },
+      name: { uk: "Ваше ім'я", pl: 'Imię' },
+      details: { uk: 'Деталі замовлення', pl: 'Szczegóły zamówienia' },
+      submit: { uk: 'Оформити замовлення', pl: 'Złóż zamówienie' },
+      thanks: { uk: 'Дякуємо за замовлення!', pl: 'Dziękujemy za zamówienie!' },
+    };
+    return dict[key]?.[language] || key;
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6">
       <div className="absolute top-4 right-4">
-        <button onClick={toggleLang} className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 transition">
-          {i18n.language === 'uk' ? 'PL' : 'UA'}
+        <button onClick={toggleLang} className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600">
+          {language === 'uk' ? 'PL' : 'UA'}
         </button>
       </div>
 
@@ -44,66 +66,20 @@ export default function Home() {
       <p className="text-gray-300 mb-6 text-center">{t('intro')}</p>
 
       {!confirmed ? (
-        <form
-        onSubmit={handleSubmit}
-        encType="multipart/form-data"
-        method="POST"
-      >
-          <input name="name" placeholder={t('name')} onChange={handleChange} className="w-full p-3 rounded bg-zinc-800 border border-zinc-600" required />
-          <input name="email" placeholder="Email" onChange={handleChange} className="w-full p-3 rounded bg-zinc-800 border border-zinc-600" required />
-          <textarea name="details" placeholder={t('details')} onChange={handleChange} className="w-full p-3 rounded bg-zinc-800 border border-zinc-600" required />
-
-          <input
-            type="file"
-            name="file"
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="w-full p-2 bg-zinc-800 text-white border border-zinc-600 rounded"
-          />
-
-          <button type="submit" className="w-full bg-white text-black py-2 rounded hover:bg-gray-200 transition">
-            {loading ? t('loading') : t('makeOrder')}
+        <form onSubmit={handleSubmit} method="POST" encType="multipart/form-data" className="flex flex-col w-full max-w-md space-y-4">
+          <input name="name" placeholder={t('name')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
+          <input name="email" type="email" placeholder="Email" onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
+          <textarea name="details" placeholder={t('details')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
+          <input type="file" name="file" onChange={handleFileChange} className="bg-gray-800 p-3 rounded" />
+          <button type="submit" className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200">
+            {t('submit')}
           </button>
         </form>
       ) : (
-        <div className="text-green-400 text-lg animate-pulse mt-4">{t('confirmed')}</div>
+        <p className="text-green-400 text-xl font-semibold mt-4">{t('thanks')}</p>
       )}
 
-      <footer className="absolute bottom-4 text-sm text-gray-500 flex gap-4 items-center">
-        <span>Poland, Łódź, Łagiewnicka 118B</span>
-        <button
-          onClick={() => setShowInfo(true)}
-          className="underline text-blue-400 hover:text-blue-300"
-        >
-          Інформація про компанію
-        </button>
-      </footer>
-
-      {showInfo && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-xl text-left text-sm relative">
-            <button
-              className="absolute top-2 right-3 text-gray-500 hover:text-white"
-              onClick={() => setShowInfo(false)}
-            >✕</button>
-            <h2 className="text-xl font-bold mb-3">EXPRESS PHOTO</h2>
-            <p><strong>Послуги:</strong></p>
-            <ul className="list-disc list-inside mb-2">
-              <li>Портретна зйомка / Sesja portretowa</li>
-              <li>Відновлення фото / Odnawianie zdjęć</li>
-              <li>Фотосесія: портретна, материнство, групова / Portretowa, macierzyńska, grupowa</li>
-              <li>Фотографії на документи / Zdjęcia do dokumentów</li>
-              <li>Ксерокопія ч/б і кольорова / Kserokopia czarno-biała, kolorowa</li>
-              <li>Формати A3, A4. Ламінування, сканування</li>
-              <li>Друк фото, друк документів / Druk zdjęć, dokumentów</li>
-            </ul>
-            <p><strong>Контакти:</strong></p>
-            <p>Телефон: +48 609 860 816</p>
-            <p>Email: dariiakravetsexpressphoto@gmail.com</p>
-            <p>Адреса: Poland, Łódź, Łagiewnicka 118B</p>
-          </div>
-        </div>
-      )}
+      <p className="text-sm text-gray-500 mt-10">Poland, Łódź, Łagiewnicka 118B</p>
     </div>
   );
 }
