@@ -19,6 +19,8 @@ const apiRoute = nextConnect<NextApiRequest, NextApiResponse>({
 apiRoute.use(upload.single('file'));
 
 apiRoute.post(async (req: any, res) => {
+  console.log("BODY:", req.body);
+  console.log("FILE:", req.file);
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID!;
 
