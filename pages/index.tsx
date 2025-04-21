@@ -7,6 +7,7 @@ export default function Home() {
   const [form, setForm] = useState({ name: '', email: '', details: '' });
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const handleChange = (e: any) => setForm({ ...form, [e.target.name]: e.target.value });
   const toggleLang = () => i18n.changeLanguage(i18n.language === 'uk' ? 'pl' : 'uk');
@@ -26,7 +27,9 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10">
       <div className="absolute top-4 right-4">
-        <button onClick={toggleLang} className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 transition">{i18n.language === 'uk' ? 'PL' : 'UA'}</button>
+        <button onClick={toggleLang} className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 transition">
+          {i18n.language === 'uk' ? 'PL' : 'UA'}
+        </button>
       </div>
 
       <h1 className="text-4xl font-bold mb-2">ExpressPhoto <span className="text-gray-400">Online</span></h1>
@@ -45,7 +48,41 @@ export default function Home() {
         <div className="text-green-400 text-lg animate-pulse mt-4">{t('confirmed')}</div>
       )}
 
-      <footer className="absolute bottom-4 text-sm text-gray-500">Poland, Łódź, Łagiewnicka 118B</footer>
+      <footer className="absolute bottom-4 text-sm text-gray-500 flex gap-4 items-center">
+        <span>Poland, Łódź, Łagiewnicka 118B</span>
+        <button
+          onClick={() => setShowInfo(true)}
+          className="underline text-blue-400 hover:text-blue-300"
+        >
+          Інформація про компанію
+        </button>
+      </footer>
+
+      {showInfo && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-xl text-left text-sm relative">
+            <button
+              className="absolute top-2 right-3 text-gray-500 hover:text-white"
+              onClick={() => setShowInfo(false)}
+            >✕</button>
+            <h2 className="text-xl font-bold mb-3">EXPRESS PHOTO</h2>
+            <p><strong>Послуги:</strong></p>
+            <ul className="list-disc list-inside mb-2">
+              <li>Портретна зйомка / Sesja portretowa</li>
+              <li>Відновлення фото / Odnawianie zdjęć</li>
+              <li>Фотосесія: портретна, материнство, групова / Portretowa, macierzyńska, grupowa</li>
+              <li>Фотографії на документи / Zdjęcia do dokumentów</li>
+              <li>Ксерокопія ч/б і кольорова / Kserokopia czarno-biała, kolorowa</li>
+              <li>Формати A3, A4. Ламінування, сканування</li>
+              <li>Друк фото, друк документів / Druk zdjęć, dokumentów</li>
+            </ul>
+            <p><strong>Контакти:</strong></p>
+            <p>Телефон: +48 609 860 816</p>
+            <p>Email: dariiakravetsexpressphoto@gmail.com</p>
+            <p>Адреса: Poland, Łódź, Łagiewnicka 118B</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
