@@ -8,6 +8,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleChange = (e: any) => setForm({ ...form, [e.target.name]: e.target.value });
   const toggleLang = () => i18n.changeLanguage(i18n.language === 'uk' ? 'pl' : 'uk');
@@ -15,11 +16,18 @@ export default function Home() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
+
+    const formData = new FormData();
+    formData.append('name', form.name);
+    formData.append('email', form.email);
+    formData.append('details', form.details);
+    if (file) formData.append('file', file);
+
     await fetch('/api/send-order', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: formData,
     });
+
     setLoading(false);
     setConfirmed(true);
   };
@@ -36,10 +44,19 @@ export default function Home() {
       <p className="text-gray-300 mb-6 text-center">{t('intro')}</p>
 
       {!confirmed ? (
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-3">
+        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-3" encType="multipart/form-data">
           <input name="name" placeholder={t('name')} onChange={handleChange} className="w-full p-3 rounded bg-zinc-800 border border-zinc-600" required />
           <input name="email" placeholder="Email" onChange={handleChange} className="w-full p-3 rounded bg-zinc-800 border border-zinc-600" required />
           <textarea name="details" placeholder={t('details')} onChange={handleChange} className="w-full p-3 rounded bg-zinc-800 border border-zinc-600" required />
+
+          <input
+            type="file"
+            name="file"
+            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="w-full p-2 bg-zinc-800 text-white border border-zinc-600 rounded"
+          />
+
           <button type="submit" className="w-full bg-white text-black py-2 rounded hover:bg-gray-200 transition">
             {loading ? t('loading') : t('makeOrder')}
           </button>
