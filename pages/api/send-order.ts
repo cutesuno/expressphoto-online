@@ -1,11 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
 import fs from 'fs';
+import path from 'path';
 import FormData from 'form-data';
+import axios from 'axios';
 
+// Зберігаємо тимчасово файл у /tmp
 const upload = multer({ dest: '/tmp' });
 
-const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: any) => {
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+function runMiddleware(req: any, res: any, fn: any) {
   return new Promise((resolve, reject) => {
     fn(req, res, (result: any) => {
       if (result instanceof Error) {
@@ -14,52 +23,46 @@ const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: any) => {
       return resolve(result);
     });
   });
-};
+}
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-export default async function handler(req: any, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: `Метод ${req.method} не дозволено` });
-  }
-
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await runMiddleware(req, res, upload.single('file'));
 
-  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID!;
+  const { name, email, details } = (req as any).body;
+  const file = (req as any).file;
 
-  const name = req.body?.name || 'undefined';
-  const email = req.body?.email || 'undefined';
-  const details = req.body?.details || 'undefined';
+  console.log('🧾 BODY:', name, email, details);
+  console.log('📎 FILE:', file);
 
-  const text = `📸 НОВЕ ЗАМОВЛЕННЯ\n\n👤 ${name}\n📧 ${email}\n📝 ${details}`;
+  const token = process.env.TELEGRAM_BOT_TOKEN!;
+  const chatId = process.env.TELEGRAM_CHAT_ID!;
 
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: TELEGRAM_CHAT_ID,
-      text,
-    }),
-  });
-
-  if (file) {
-    formData.append('file', file);
-  }
-    const fileStream = fs.createReadStream(req.file.path);
-    const form = new FormData();
-    form.append('chat_id', TELEGRAM_CHAT_ID);
-    form.append('document', fileStream, req.file.originalname);
-
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
-      method: 'POST',
-      body: form as any,
+  try {
+    // Надсилаємо текст
+    await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+      chat_id: chatId,
+      text: `📸 НОВЕ ЗАМОВЛЕННЯ\n👤 ${name}\n📧 ${email}\n📝 ${details}`,
     });
-  }
 
-  res.status(200).json({ success: true });
+    // Якщо є файл — шлемо файл
+    if (file) {
+      const form = new FormData();
+      form.append('chat_id', chatId);
+      form.append('document', fs.createReadStream(file.path), {
+        filename: file.originalname,
+      });
+
+      await axios.post(`https://api.telegram.org/bot${token}/sendDocument`, form, {
+        headers: form.getHeaders(),
+      });
+
+      // Видаляємо файл
+      fs.unlinkSync(file.path);
+    }
+
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error('💥 Telegram error:', error);
+    res.status(500).json({ error: 'Щось пішло не так' });
+  }
 }
