@@ -23,6 +23,15 @@ apiRoute.post(async (req: any, res) => {
   console.log("FILE:", req.file);
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID!;
+  
+  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: `🐞 DEBUG:\n\nBODY: ${JSON.stringify(req.body)}\n\nFILE: ${req.file ? req.file.originalname : '❌ no file'}`
+    }),
+  });
 
   const name = req.body.name || '—';
   const email = req.body.email || '—';
