@@ -44,7 +44,11 @@ export default function Home() {
       <p className="text-gray-300 mb-6 text-center">{t('intro')}</p>
 
       {!confirmed ? (
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-3" encType="multipart/form-data">
+        <form
+        onSubmit={handleSubmit}
+        encType="multipart/form-data"
+        method="POST"
+      >
           <input name="name" placeholder={t('name')} onChange={handleChange} className="w-full p-3 rounded bg-zinc-800 border border-zinc-600" required />
           <input name="email" placeholder="Email" onChange={handleChange} className="w-full p-3 rounded bg-zinc-800 border border-zinc-600" required />
           <textarea name="details" placeholder={t('details')} onChange={handleChange} className="w-full p-3 rounded bg-zinc-800 border border-zinc-600" required />
