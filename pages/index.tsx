@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
@@ -8,10 +8,18 @@ export default function Home() {
     details: '',
     time: '',
   });
+  const [isLoading, setIsLoading] = useState(true);
   const [file, setFile] = useState<File | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
   const [showInfo, setShowInfo] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({
@@ -65,9 +73,21 @@ export default function Home() {
     return dict[key]?.[language] || key;
   };
 
+  if (isLoading) {
+    return (
+      <motion.div
+        className="min-h-screen flex items-center justify-center bg-black text-white text-3xl font-bold"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 1 }}
+      >
+        Завантаження...
+      </motion.div>
+    );
+  }
+
   return (
     <>
-
       <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative">
         {/* Кнопка перемикання мови */}
         <button
@@ -115,7 +135,7 @@ export default function Home() {
                   <h3 className="font-semibold mt-4">Контакти:</h3>
                   <p>Телефон: +48 609 860 816</p>
                   <p>Пошта: dariiaexpressphoto@gmail.com</p>
-                  <p>Адреса: Польща, Лодзь, вул. Łagiewnicka 118B</p>
+                  <p>Адреса: Польща, Лодзь, вул. Łagiewnicka 118B 91-471</p>
                 </>
               ) : (
                 <>
@@ -133,7 +153,7 @@ export default function Home() {
                   <h3 className="font-semibold mt-4">Kontakt:</h3>
                   <p>Telefon: +48 609 860 816</p>
                   <p>E-mail: dariiaexpressphoto@gmail.com</p>
-                  <p>Adres: Polska, Łódź, ul. Łagiewnicka 118B</p>
+                  <p>Adres: Polska, Łódź, ul. Łagiewnicka 118B 91-471</p>
                 </>
               )}
             </div>
