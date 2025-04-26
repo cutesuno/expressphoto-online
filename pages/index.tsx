@@ -2,13 +2,18 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
-  const [form, setForm] = useState({ name: '', email: '', details: '', time: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    details: '',
+    time: '',
+  });
   const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
   const [showInfo, setShowInfo] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -32,8 +37,7 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
+    setIsSending(true);
     const formData = new FormData();
     formData.append('name', form.name);
     formData.append('email', form.email);
@@ -41,17 +45,13 @@ export default function Home() {
     formData.append('time', form.time);
     if (file) formData.append('file', file);
 
-    try {
-      await fetch('/api/send-order', {
-        method: 'POST',
-        body: formData,
-      });
-      setConfirmed(true);
-    } catch (error) {
-      alert('Сталася помилка. Спробуйте ще раз.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    await fetch('/api/send-order', {
+      method: 'POST',
+      body: formData,
+    });
+
+    setIsSending(false);
+    setConfirmed(true);
   };
 
   const toggleLang = () => setLanguage(language === 'uk' ? 'pl' : 'uk');
@@ -67,7 +67,7 @@ export default function Home() {
       details: { uk: 'Деталі замовлення', pl: 'Szczegóły zamówienia' },
       time: { uk: 'Час замовлення', pl: 'Godzina odbioru' },
       submit: { uk: 'Оформити замовлення', pl: 'Złóż zamówienie' },
-      sending: { uk: 'Надсилаємо...', pl: 'Wysyłamy...' },
+      sending: { uk: 'Надсилаємо...', pl: 'Wysyłanie...' },
       thanks: { uk: 'Дякуємо за замовлення!', pl: 'Dziękujemy za zamówienie!' },
       back: { uk: 'Оформити нове замовлення', pl: 'Złóż nowe zamówienie' },
       company: { uk: 'Інформація про компанію', pl: 'Informacje o firmie' },
@@ -93,11 +93,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative">
-      <button onClick={toggleLang} className="absolute top-4 right-4 text-2xl">
+      <button
+        onClick={toggleLang}
+        className="absolute top-4 right-4 text-2xl"
+      >
         {language === 'uk' ? '🇵🇱' : '🇺🇦'}
       </button>
 
-      <button onClick={() => setShowInfo(true)} className="absolute top-4 left-4 text-sm underline">
+      <button
+        onClick={() => setShowInfo(true)}
+        className="absolute top-4 left-4 text-sm underline"
+      >
         {t('company')}
       </button>
 
@@ -108,50 +114,94 @@ export default function Home() {
           animate={{ opacity: 1 }}
         >
           <div className="bg-white text-black p-6 rounded-xl max-w-md w-full relative space-y-4">
-            <button onClick={() => setShowInfo(false)} className="absolute top-2 right-3 text-xl">
+            <button
+              onClick={() => setShowInfo(false)}
+              className="absolute top-2 right-3 text-xl"
+            >
               ✖️
             </button>
 
-            <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
-            <h3 className="font-semibold">{language === 'uk' ? 'Опис послуг:' : 'Opis usług:'}</h3>
-            <ul className="list-disc pl-5 text-left space-y-1">
-              <li>{language === 'uk' ? 'Фотосесії (портретні, вагітність, народження, групові фото)' : 'Sesje zdjęciowe (portretowe, ciążowe, narodzinowe, grupowe)'}</li>
-              <li>{language === 'uk' ? 'Весільні та заручальні фотосесії' : 'Sesje ślubne i zaręczynowe'}</li>
-              <li>{language === 'uk' ? 'Відновлення та ретуш фотографій' : 'Renowacja i retusz fotografii'}</li>
-              <li>{language === 'uk' ? 'Ксерокопії ч/б та кольорові (A3, A4)' : 'Kserokopie czarno-białe i kolorowe (A3, A4)'}</li>
-              <li>{language === 'uk' ? 'Ламінування документів' : 'Laminowanie dokumentów'}</li>
-              <li>{language === 'uk' ? 'Сканування документів' : 'Skanowanie dokumentów'}</li>
-              <li>{language === 'uk' ? 'Друк фотографій та документів' : 'Drukowanie zdjęć i dokumentów'}</li>
-            </ul>
-            <h3 className="font-semibold mt-4">{language === 'uk' ? 'Контакти:' : 'Kontakt:'}</h3>
-            <p>{t('phone')}</p>
-            <p>{t('emailCompany')}</p>
-            <p>{t('address')}</p>
+            {language === 'uk' ? (
+              <>
+                <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
+                <h3 className="font-semibold">Опис послуг:</h3>
+                <ul className="list-disc pl-5 text-left space-y-1">
+                  <li>Фотосесії (портретні, вагітність, народження, групові фото)</li>
+                  <li>Весільні та заручальні фотосесії</li>
+                  <li>Відновлення та ретуш фотографій</li>
+                  <li>Ксерокопії ч/б та кольорові (A3, A4)</li>
+                  <li>Ламінування документів</li>
+                  <li>Сканування документів</li>
+                  <li>Друк фотографій та документів</li>
+                </ul>
+                <h3 className="font-semibold mt-4">Контакти:</h3>
+                <p>{t('phone')}</p>
+                <p>{t('emailCompany')}</p>
+                <p>{t('address')}</p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
+                <h3 className="font-semibold">Opis usług:</h3>
+                <ul className="list-disc pl-5 text-left space-y-1">
+                  <li>Sesje zdjęciowe (portretowe, ciążowe, narodzinowe, grupowe)</li>
+                  <li>Sesje ślubne i zaręczynowe</li>
+                  <li>Renowacja i retusz fotografii</li>
+                  <li>Kserokopie czarno-białe i kolorowe (A3, A4)</li>
+                  <li>Laminowanie dokumentów</li>
+                  <li>Skanowanie dokumentów</li>
+                  <li>Drukowanie zdjęć i dokumentów</li>
+                </ul>
+                <h3 className="font-semibold mt-4">Kontakt:</h3>
+                <p>{t('phone')}</p>
+                <p>{t('emailCompany')}</p>
+                <p>{t('address')}</p>
+              </>
+            )}
           </div>
         </motion.div>
       )}
 
-      <motion.h1 className="text-4xl font-bold mb-2 text-center" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+      <motion.h1
+        className="text-4xl font-bold mb-2 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
         ExpressPhoto <span className="text-gray-400">Online</span>
       </motion.h1>
 
-      <motion.p className="text-gray-300 mb-6 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.p
+        className="text-gray-300 mb-6 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
         {t('intro')}
       </motion.p>
 
       {!confirmed ? (
-        <motion.form onSubmit={handleSubmit} method="POST" encType="multipart/form-data" className="flex flex-col w-full max-w-md space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <motion.form
+          onSubmit={handleSubmit}
+          method="POST"
+          encType="multipart/form-data"
+          className="flex flex-col w-full max-w-md space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
           <input name="name" placeholder={t('name')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input name="email" type="text" placeholder={t('email')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <textarea name="details" placeholder={t('details')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input name="time" type="time" onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input type="file" name="file" onChange={handleFileChange} className="bg-gray-800 p-3 rounded" />
-          <button type="submit" className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200">
-            {isSubmitting ? t('sending') : t('submit')}
+          <button type="submit" disabled={isSending} className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200">
+            {isSending ? t('sending') : t('submit')}
           </button>
         </motion.form>
       ) : (
-        <motion.div className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <motion.div
+          className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
           <p>{t('thanks')}</p>
           <button
             onClick={() => {
