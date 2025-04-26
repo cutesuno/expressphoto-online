@@ -13,6 +13,7 @@ export default function Home() {
   const [confirmed, setConfirmed] = useState(false);
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
   const [showInfo, setShowInfo] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -36,18 +37,22 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true); // запускаємо анімацію сабміту
+  
     const formData = new FormData();
     formData.append('name', form.name);
     formData.append('email', form.email);
     formData.append('details', form.details);
     formData.append('time', form.time);
     if (file) formData.append('file', file);
-
+  
     await fetch('/api/send-order', {
       method: 'POST',
       body: formData,
     });
+  
     setConfirmed(true);
+    setIsSubmitting(false); // виключаємо анімацію
   };
 
   const toggleLang = () => setLanguage(language === 'uk' ? 'pl' : 'uk');
@@ -187,28 +192,33 @@ export default function Home() {
           <textarea name="details" placeholder={t('details')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input name="time" type="time" onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input type="file" name="file" onChange={handleFileChange} className="bg-gray-800 p-3 rounded" />
-          <button type="submit" className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200">
-            {t('submit')}
-          </button>
+          <button type="submit"
+  className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+  disabled={isSubmitting}
+>
+  {isSubmitting ? 'Надсилаємо...' : t('submit')}
+</button>
         </motion.form>
       ) : (
         <motion.div
-          className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <p>{t('thanks')}</p>
-          <button
-            onClick={() => {
-              setConfirmed(false);
-              setForm({ name: '', email: '', details: '', time: '' });
-              setFile(null);
-            }}
-            className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200"
-          >
-            {t('back')}
-          </button>
-        </motion.div>
+  className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+>
+  <p>{t('thanks')}</p>
+  <motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    onClick={() => {
+      setConfirmed(false);
+      setForm({ name: '', email: '', details: '', time: '' });
+      setFile(null);
+    }}
+    className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200"
+  >
+    {t('back')}
+  </motion.button>
+</motion.div>
       )}
 
       <p className="text-sm text-gray-500 mt-10 text-center">
