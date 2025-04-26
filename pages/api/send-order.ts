@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { File as FormidableFile } from 'formidable';
-import fs from 'fs';
+import fs from 'fs/promises'; // тут важливо використовувати промісову версію
 import FormData from 'form-data';
 import axios from 'axios';
 
@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      console.error('Помилка парсингу форми:', err);
+      console.error('Form parsing error:', err);
       return res.status(500).json({ message: 'Form parsing error' });
     }
 
@@ -38,16 +38,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 📧 Email/Телефон: ${email}
 📝 Деталі: ${details}
 ⏰ Час замовлення: ${time}
-`;
+      `;
 
       const file = files.file as FormidableFile;
 
       if (file && file.filepath) {
-        const stream = fs.createReadStream(file.filepath);
+        const fileBuffer = await fs.readFile(file.filepath); // читаємо файл як Buffer
+
         const formData = new FormData();
         formData.append('chat_id', TELEGRAM_CHAT_ID!);
         formData.append('caption', caption);
-        formData.append('document', stream, file.originalFilename || 'file');
+        formData.append('document', fileBuffer, {
+          filename: file.originalFilename || 'file',
+        });
 
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, formData, {
           headers: formData.getHeaders(),
@@ -55,7 +58,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         return res.status(200).json({ message: 'Файл і текст відправлено' });
       } else {
-        // Якщо файл не прикріплений, відправити тільки текст
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           chat_id: TELEGRAM_CHAT_ID,
           text: caption,
@@ -64,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json({ message: 'Тільки текст відправлено' });
       }
     } catch (error) {
-      console.error('Помилка надсилання у Telegram:', error);
+      console.error('Telegram error:', error);
       return res.status(500).json({ message: 'Telegram send error' });
     }
   });
