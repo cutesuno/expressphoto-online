@@ -2,21 +2,34 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
-  const [form, setForm] = useState({ name: '', email: '', details: '', time: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    details: '',
+    time: '',
+  });
   const [file, setFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [confirmed, setConfirmed] = useState(false);
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
+  const [sending, setSending] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const TELEGRAM_BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,30 +40,45 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    const formData = new FormData();
-    formData.append('name', form.name);
-    formData.append('email', form.email);
-    formData.append('details', form.details);
-    formData.append('time', form.time);
-    if (file) formData.append('file', file);
+    setSending(true);
 
-    await fetch('/api/send-order', {
+    const message = `
+📸 НОВЕ ЗАМОВЛЕННЯ
+👤 Ім'я: ${form.name}
+📧 Email або Телефон: ${form.email}
+📝 Деталі: ${form.details}
+⏰ Час замовлення: ${form.time}
+    `;
+
+    const formData = new FormData();
+    formData.append('chat_id', TELEGRAM_CHAT_ID!);
+    formData.append('caption', message);
+    if (file) {
+      formData.append('document', file);
+    }
+
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${file ? 'sendDocument' : 'sendMessage'}`;
+
+    await fetch(url, {
       method: 'POST',
-      body: formData,
+      body: file ? formData : JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message }),
+      headers: file ? undefined : { 'Content-Type': 'application/json' },
     });
 
     setConfirmed(true);
-    setIsSubmitting(false);
+    setSending(false);
   };
 
   const toggleLang = () => setLanguage(language === 'uk' ? 'pl' : 'uk');
 
   const t = (key: string) => {
     const dict: any = {
-      intro: { uk: 'Онлайн-друк, фото на документи, ксерокопії та більше', pl: 'Druk online, zdjęcia do dokumentów, kserokopie i więcej' },
+      intro: {
+        uk: 'Онлайн-друк, фото на документи, ксерокопії та більше',
+        pl: 'Druk online, zdjęcia do dokumentów, kserokopie i więcej',
+      },
       name: { uk: "Ваше ім'я", pl: 'Imię' },
-      email: { uk: 'Емейл або телефон', pl: 'Email lub telefon' },
+      email: { uk: "Емейл або телефон", pl: 'Email lub telefon' },
       details: { uk: 'Деталі замовлення', pl: 'Szczegóły zamówienia' },
       time: { uk: 'Час замовлення', pl: 'Godzina odbioru' },
       submit: { uk: 'Оформити замовлення', pl: 'Złóż zamówienie' },
@@ -67,7 +95,12 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <motion.div className="min-h-screen flex items-center justify-center bg-black text-white text-3xl font-bold" initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: 1 }}>
+      <motion.div
+        className="min-h-screen flex items-center justify-center bg-black text-white text-3xl font-bold"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 1 }}
+      >
         Welcome to EXPRESS PHOTO ONLINE
       </motion.div>
     );
@@ -75,21 +108,36 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative">
-      {/* Кнопка перемикання мови */}
-      <button onClick={toggleLang} className="absolute top-4 right-4 text-2xl">
+      {/* Перемикач мови */}
+      <button
+        onClick={toggleLang}
+        className="absolute top-4 right-4 text-2xl"
+      >
         {language === 'uk' ? '🇵🇱' : '🇺🇦'}
       </button>
 
-      {/* Кнопка інформації про компанію */}
-      <button onClick={() => setShowInfo(true)} className="absolute top-4 left-4 text-sm underline">
+      {/* Модалка Інформація про компанію */}
+      <button
+        onClick={() => setShowInfo(true)}
+        className="absolute top-4 left-4 text-sm underline"
+      >
         {t('company')}
       </button>
 
-      {/* Модалка компанії */}
       {showInfo && (
-        <motion.div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center text-center p-6 z-50 overflow-y-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center text-center p-6 z-50 overflow-y-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
           <div className="bg-white text-black p-6 rounded-xl max-w-md w-full relative space-y-4">
-            <button onClick={() => setShowInfo(false)} className="absolute top-2 right-3 text-xl">✖️</button>
+            <button
+              onClick={() => setShowInfo(false)}
+              className="absolute top-2 right-3 text-xl"
+            >
+              ✖️
+            </button>
+
             <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
             <h3 className="font-semibold">{language === 'uk' ? 'Опис послуг:' : 'Opis usług:'}</h3>
             <ul className="list-disc pl-5 text-left space-y-1">
@@ -109,35 +157,64 @@ export default function Home() {
         </motion.div>
       )}
 
-      {/* Контент */}
-      <motion.h1 className="text-4xl font-bold mb-2 text-center" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+      <motion.h1
+        className="text-4xl font-bold mb-2 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
         ExpressPhoto <span className="text-gray-400">Online</span>
       </motion.h1>
-      <motion.p className="text-gray-300 mb-6 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+
+      <motion.p
+        className="text-gray-300 mb-6 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
         {t('intro')}
       </motion.p>
 
       {!confirmed ? (
-        <motion.form onSubmit={handleSubmit} method="POST" encType="multipart/form-data" className="flex flex-col w-full max-w-md space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <motion.form
+          onSubmit={handleSubmit}
+          method="POST"
+          encType="multipart/form-data"
+          className="flex flex-col w-full max-w-md space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
           <input name="name" placeholder={t('name')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input name="email" type="text" placeholder={t('email')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <textarea name="details" placeholder={t('details')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input name="time" type="time" onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input type="file" name="file" onChange={handleFileChange} className="bg-gray-800 p-3 rounded" />
-          <button type="submit" disabled={isSubmitting} className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200">
-            {isSubmitting ? t('sending') : t('submit')}
+          <button
+            type="submit"
+            disabled={sending}
+            className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200 disabled:opacity-50"
+          >
+            {sending ? t('sending') : t('submit')}
           </button>
         </motion.form>
       ) : (
-        <motion.div className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <motion.div
+          className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
           <p>{t('thanks')}</p>
-          <button onClick={() => { setConfirmed(false); setForm({ name: '', email: '', details: '', time: '' }); setFile(null); }} className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200">
+          <button
+            onClick={() => {
+              setConfirmed(false);
+              setForm({ name: '', email: '', details: '', time: '' });
+              setFile(null);
+            }}
+            className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200"
+          >
             {t('back')}
           </button>
         </motion.div>
       )}
 
-      {/* Низ сайту */}
       <p className="text-sm text-gray-500 mt-10 text-center">
         {t('address')}<br />
         {t('phone')}<br />
