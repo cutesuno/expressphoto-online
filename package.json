@@ -12,6 +12,7 @@
     "axios": "^1.8.4",
     "form-data": "^4.0.2",
     "formidable": "^3.5.3",
+    "framer-motion": "^12.9.2",
     "i18next": "^23.4.6",
     "multer": "^1.4.5-lts.2",
     "next": "^13.4.12",
