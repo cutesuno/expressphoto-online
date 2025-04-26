@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { File as FormidableFile } from 'formidable';
 import fs from 'fs';
 import axios from 'axios';
-import FormData from 'form-data'; // Ось це!
+import FormData from 'form-data';
 
 export const config = {
   api: {
@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
         await axios.post(`https://api.telegram.org/bot${botToken}/sendDocument`, formData, {
-          headers: formData.getHeaders(), // важливо!
+          headers: formData.getHeaders(),
         });
       } else {
         await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
