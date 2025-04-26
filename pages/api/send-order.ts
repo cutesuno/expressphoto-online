@@ -29,37 +29,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const name = fields.name?.toString() || 'undefined';
-      const email = fields.email?.toString() || 'undefined';
-      const details = fields.details?.toString() || 'undefined';
+      const name = fields.name?.toString() || 'Не вказано';
+      const email = fields.email?.toString() || 'Не вказано';
+      const details = fields.details?.toString() || 'Не вказано';
 
-      const message = `
-📸 НОВЕ ЗАМОВЛЕННЯ
-👤 ${name}
-📧 ${email}
-📝 ${details}
-`;
+      const caption = `\ud83d\udedf\ufe0f НОВЕ ЗАМОВЛЕННЯ\n────────────\n\n\ud83d\udc64 Ім'я: ${name}\n\ud83d\udce7 Емейл або телефон: ${email}\n\ud83d\udcc5 Деталі: ${details}`;
 
-      // Якщо файл є — надсилаємо разом із caption
-      const uploadedFile = Array.isArray(files.file) ? files.file[0] : files.file;
-
-      if (uploadedFile && uploadedFile.filepath) {
-        const stream = fs.createReadStream(uploadedFile.filepath);
+      const file = files.file as FormidableFile;
+      if (file && file.filepath) {
+        const stream = fs.createReadStream(file.filepath);
         const formData = new FormData();
         formData.append('chat_id', TELEGRAM_CHAT_ID!);
-        formData.append('caption', message); // 👈 Caption тут
-        formData.append('document', stream, uploadedFile.originalFilename || 'file');
+        formData.append('caption', caption);
+        formData.append('document', stream, file.originalFilename || 'file');
 
-        await axios.post(
-          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`,
-          formData,
-          { headers: formData.getHeaders() }
-        );
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, formData, {
+          headers: formData.getHeaders(),
+        });
       } else {
-        // Якщо файлу немає — надсилаємо окремо текст
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           chat_id: TELEGRAM_CHAT_ID,
-          text: message,
+          text: caption,
         });
       }
 
