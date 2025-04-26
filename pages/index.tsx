@@ -84,22 +84,59 @@ export default function Home() {
       </button>
 
       {showInfo && (
-        <motion.div
-          className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center text-center p-6 z-50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <p className="mb-2">{t('address')}</p>
-          <p className="mb-2">{t('phone')}</p>
-          <p className="mb-4">{t('emailCompany')}</p>
-          <button
-            onClick={() => setShowInfo(false)}
-            className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200"
-          >
-            OK
-          </button>
-        </motion.div>
+  <motion.div
+    className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center text-center p-6 z-50 overflow-y-auto"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+  >
+    <div className="bg-white text-black p-6 rounded-xl max-w-md w-full relative space-y-4">
+      <button
+        onClick={() => setShowInfo(false)}
+        className="absolute top-2 right-3 text-xl"
+      >
+        ✖️
+      </button>
+
+      {language === 'uk' ? (
+        <>
+          <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
+          <h3 className="font-semibold">Опис послуг:</h3>
+          <ul className="list-disc pl-5 text-left space-y-1">
+            <li>Фотосесії (портретні, вагітність, народження, групові фото)</li>
+            <li>Весільні та заручальні фотосесії</li>
+            <li>Відновлення та ретуш фотографій</li>
+            <li>Ксерокопії ч/б та кольорові (A3, A4)</li>
+            <li>Ламінування документів</li>
+            <li>Сканування документів</li>
+            <li>Друк фотографій та документів</li>
+          </ul>
+          <h3 className="font-semibold mt-4">Контакти:</h3>
+          <p>Телефон: +48 609 860 816</p>
+          <p>Пошта: dariiaexpressphoto@gmail.com</p>
+          <p>Адреса: Польща, Лодзь, вул. Łagiewnicka 118B</p>
+        </>
+      ) : (
+        <>
+          <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
+          <h3 className="font-semibold">Opis usług:</h3>
+          <ul className="list-disc pl-5 text-left space-y-1">
+            <li>Sesje zdjęciowe (portretowe, ciążowe, narodzinowe, grupowe)</li>
+            <li>Sesje ślubne i zaręczynowe</li>
+            <li>Renowacja i retusz fotografii</li>
+            <li>Kserokopie czarno-białe i kolorowe (A3, A4)</li>
+            <li>Laminowanie dokumentów</li>
+            <li>Skanowanie dokumentów</li>
+            <li>Drukowanie zdjęć i dokumentów</li>
+          </ul>
+          <h3 className="font-semibold mt-4">Kontakt:</h3>
+          <p>Telefon: +48 609 860 816</p>
+          <p>E-mail: dariiaexpressphoto@gmail.com</p>
+          <p>Adres: Polska, Łódź, ul. Łagiewnicka 118B</p>
+        </>
       )}
+    </div>
+  </motion.div>
+)}
 
       <motion.h1
         className="text-4xl font-bold mb-2"
