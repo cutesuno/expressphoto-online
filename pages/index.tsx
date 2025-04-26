@@ -89,15 +89,9 @@ export default function Home() {
   return (
     <>
       <div
-        className="min-h-screen flex flex-col items-center justify-center text-white p-6 relative"
-        style={{
-          backgroundImage: "url('/A_minimalist_digital_illustration_serves_as_a_back.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundColor: "#000",
-        }}
-      >
+  className="min-h-screen flex flex-col items-center justify-center text-white p-6 relative bg-black bg-contain bg-no-repeat bg-center"
+  style={{ backgroundImage: 'url(/A_minimalist_digital_illustration_serves_as_a_back.png)' }}
+>
         {/* Кнопка перемикання мови */}
         <button
           onClick={toggleLang}
