@@ -12,7 +12,6 @@ export default function Document() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="Онлайн-друк, фото на документи, ксерокопії та більше — ExpressPhoto Online" />
         <meta name="theme-color" content="#000000" />
-        <title>ExpressPhoto Online</title>
       </Head>
       <body className="bg-black text-white">
         <Main />
