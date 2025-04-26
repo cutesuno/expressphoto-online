@@ -29,31 +29,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const name = fields.name?.toString() || 'Без імені';
-      const email = fields.email?.toString() || 'Без пошти';
-      const details = fields.details?.toString() || 'Без деталей';
-      const time = fields.time?.toString() || 'Без часу';
+      const name = fields.name?.toString() || 'undefined';
+      const email = fields.email?.toString() || 'undefined';
+      const details = fields.details?.toString() || 'undefined';
+      const time = fields.time?.toString() || 'undefined';
 
       const message = `
 📸 НОВЕ ЗАМОВЛЕННЯ
 👤 Ім'я: ${name}
-📧 Емейл або телефон: ${email}
+📧 Контакт: ${email}
+🕒 Час замовлення: ${time}
 📝 Деталі: ${details}
-⏰ Час замовлення: ${time}
 `;
 
       const file = files.file as FormidableFile;
 
       if (file && file.filepath) {
+        const stream = fs.createReadStream(file.filepath);
         const formData = new FormData();
         formData.append('chat_id', TELEGRAM_CHAT_ID!);
-        formData.append('caption', message);
-        formData.append('document', fs.createReadStream(file.filepath), file.originalFilename || 'file.jpg');
 
-        await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, formData, {
-          headers: formData.getHeaders(),
+        if (file.mimetype?.startsWith('image/')) {
+          // Якщо фото
+          formData.append('photo', stream, {
+            filename: file.originalFilename || 'photo.jpg',
+            contentType: file.mimetype,
+          });
+          formData.append('caption', message);
+
+          await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, formData, {
+            headers: formData.getHeaders(),
+          });
+        } else {
+          // Якщо не фото
+          formData.append('document', stream, {
+            filename: file.originalFilename || 'file',
+            contentType: file.mimetype || 'application/octet-stream',
+          });
+          formData.append('caption', message);
+
+          await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, formData, {
+            headers: formData.getHeaders(),
+          });
+        }
+
+        // Після відправки можна почистити файл:
+        fs.unlink(file.filepath, (unlinkErr) => {
+          if (unlinkErr) console.error('Помилка видалення файлу:', unlinkErr);
         });
       } else {
+        // Якщо файлу нема — шлемо тільки текст
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           chat_id: TELEGRAM_CHAT_ID,
           text: message,
