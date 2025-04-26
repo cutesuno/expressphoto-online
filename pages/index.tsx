@@ -60,6 +60,10 @@ export default function Home() {
       thanks: { uk: 'Дякуємо за замовлення!', pl: 'Dziękujemy za zamówienie!' },
       again: { uk: 'Оформити нове замовлення', pl: 'Złóż nowe zamówienie' },
       info: { uk: 'Інформація про компанію', pl: 'Informacje o firmie' },
+      info: {
+        uk: 'Poland, Łódź, Łagiewnicka 118B\nТелефон: +48 609 860 816\nПошта: dariiaexpressphoto@gmail.com',
+        pl: 'Polska, Łódź, Łagiewnicka 118B\nTelefon: +48 609 860 816\nE-mail: dariiaexpressphoto@gmail.com',
+      },
     };
     return dict[key]?.[language] || key;
   };
