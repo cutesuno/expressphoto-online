@@ -1,7 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
-import axios from 'axios';
+import TelegramBot from 'node-telegram-bot-api';
 
 export const config = {
   api: {
@@ -9,53 +9,49 @@ export const config = {
   },
 };
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID!;
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN!, { polling: false });
+const chatId = process.env.TELEGRAM_CHAT_ID!;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
+    return res.status(405).json({ message: 'Метод не дозволений' });
   }
 
-  const form = new formidable.IncomingForm({ multiples: false });
+  const form = new formidable.IncomingForm();
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      console.error('Form parse error:', err);
-      return res.status(500).json({ message: 'Form Parse Error' });
+      console.error(err);
+      return res.status(500).json({ message: 'Помилка обробки форми' });
     }
 
-    const textMessage = `
-📸 НОВЕ ЗАМОВЛЕННЯ
-👤 Ім'я: ${fields.name}
-📧 Email/Телефон: ${fields.email}
-📝 Деталі: ${fields.details}
-🕘 Час: ${fields.time}
-    `;
+    const name = fields.name as string || 'Не вказано';
+    const email = fields.email as string || 'Не вказано';
+    const details = fields.details as string || 'Не вказано';
+    const time = fields.time as string || 'Не вказано';
+
+    const caption = `✨ НОВЕ ЗАМОВЛЕННЯ
+👤 Iм'я: ${name}
+📧 Email/Телефон: ${email}
+📄 Деталі: ${details}
+⏰ Час: ${time}`;
 
     try {
-      if (files.file) {
-        const fileData = fs.readFileSync((files.file as formidable.File).filepath);
+      const file = files.file as formidable.File;
 
-        const formData = new FormData();
-        formData.append('chat_id', TELEGRAM_CHAT_ID);
-        formData.append('caption', textMessage);
-        formData.append('document', new Blob([fileData]), (files.file as formidable.File).originalFilename);
+      if (file && file.filepath) {
+        const fileStream = fs.createReadStream(file.filepath);
 
-        await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, formData, {
-          headers: formData.getHeaders(),
-        });
+        await bot.sendDocument(chatId, fileStream, {}, { filename: file.originalFilename || 'file', contentType: file.mimetype || undefined });
+        await bot.sendMessage(chatId, caption);
       } else {
-        await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          chat_id: TELEGRAM_CHAT_ID,
-          text: textMessage,
-        });
+        await bot.sendMessage(chatId, caption);
       }
 
-      return res.status(200).json({ message: 'Order sent successfully' });
+      res.status(200).json({ message: 'Замовлення надіслано успішно' });
     } catch (error) {
-      console.error('Telegram send error:', error);
-      return res.status(500).json({ message: 'Failed to send order' });
+      console.error('Помилка надсилання в Telegram:', error);
+      res.status(500).json({ message: 'Помилка надсилання в Telegram' });
     }
   });
 }
