@@ -29,44 +29,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const name = fields.name?.toString() || 'немає імені';
-      const email = fields.email?.toString() || 'немає email/телефону';
-      const details = fields.details?.toString() || 'немає деталей';
-      const time = fields.time?.toString() || 'час не вказано';
+      const name = fields.name?.toString() || 'undefined';
+      const email = fields.email?.toString() || 'undefined';
+      const details = fields.details?.toString() || 'undefined';
+      const time = fields.time?.toString() || 'undefined';
 
-      const message = `
+      const caption = `
 🛒 НОВЕ ЗАМОВЛЕННЯ
-───────────────
+__________________________
 👤 Ім'я: ${name}
 📧 Емейл або телефон: ${email}
 📝 Деталі: ${details}
-🕒 Час замовлення: ${time}
+⏰ Час замовлення: ${time}
 `;
 
       const file = files.file as FormidableFile;
 
       if (file && file.filepath) {
-        // Якщо є файл — надсилаємо файл із caption
         const stream = fs.createReadStream(file.filepath);
         const formData = new FormData();
         formData.append('chat_id', TELEGRAM_CHAT_ID!);
+        formData.append('caption', caption.trim());
         formData.append('document', stream, file.originalFilename || 'file');
-        formData.append('caption', message);
 
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, formData, {
           headers: formData.getHeaders(),
         });
       } else {
-        // Якщо файлу немає — надсилаємо просто текст
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           chat_id: TELEGRAM_CHAT_ID,
-          text: message,
+          text: caption.trim(),
         });
       }
 
       res.status(200).json({ message: 'OK' });
     } catch (error) {
-      console.error('Telegram send error:', error);
+      console.error('Telegram error:', error);
       res.status(500).json({ message: 'Failed to send to Telegram' });
     }
   });
