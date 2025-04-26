@@ -67,7 +67,6 @@ export default function Home() {
 
   return (
     <>
-      <Preloader />
 
       <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative">
         {/* Кнопка перемикання мови */}
