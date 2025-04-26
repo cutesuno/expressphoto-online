@@ -60,10 +60,6 @@ export default function Home() {
       thanks: { uk: 'Дякуємо за замовлення!', pl: 'Dziękujemy za zamówienie!' },
       again: { uk: 'Оформити нове замовлення', pl: 'Złóż nowe zamówienie' },
       info: { uk: 'Інформація про компанію', pl: 'Informacje o firmie' },
-      info: {
-        uk: 'Poland, Łódź, Łagiewnicka 118B\nТелефон: +48 609 860 816\nПошта: dariiaexpressphoto@gmail.com',
-        pl: 'Polska, Łódź, Łagiewnicka 118B\nTelefon: +48 609 860 816\nE-mail: dariiaexpressphoto@gmail.com',
-      },
     };
     return dict[key]?.[language] || key;
   };
@@ -71,9 +67,16 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative">
       <div className="absolute top-4 right-4 flex items-center space-x-4">
-        <button onClick={toggleLang} className="text-2xl">
+        <motion.button
+          key={language}
+          initial={{ opacity: 0, rotate: -90 }}
+          animate={{ opacity: 1, rotate: 0 }}
+          transition={{ duration: 0.4 }}
+          onClick={toggleLang}
+          className="text-2xl"
+        >
           {language === 'uk' ? '🇵🇱' : '🇺🇦'}
-        </button>
+        </motion.button>
         <button onClick={() => setShowModal(true)} className="text-sm underline">
           {t('info')}
         </button>
@@ -110,18 +113,34 @@ export default function Home() {
         </motion.div>
       )}
 
-      <div className="text-gray-500 text-sm mt-10 text-center">
-        Poland, Łódź, Łagiewnicka 118B<br />
-        Телефон: +48 609 860 816<br />
-        Пошта: dariiaexpressphoto@gmail.com
-      </div>
+      <motion.div
+        key={language}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-sm text-gray-500 mt-10 text-center"
+      >
+        {language === 'uk' ? (
+          <>
+            <p>Poland, Łódź, Лагевніцка 118B</p>
+            <p>Телефон: +48 609 860 816</p>
+            <p>Пошта: dariiaexpressphoto@gmail.com</p>
+          </>
+        ) : (
+          <>
+            <p>Polska, Łódź, ul. Łagiewnicka 118B</p>
+            <p>Telefon: +48 609 860 816</p>
+            <p>E-mail: dariiaexpressphoto@gmail.com</p>
+          </>
+        )}
+      </motion.div>
 
       {showModal && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4">
           <div className="bg-white text-black p-6 rounded-xl max-w-md w-full relative">
             <button onClick={() => setShowModal(false)} className="absolute top-2 right-3 text-xl">✖️</button>
             <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
-            <p>Poland, Łódź, Łagiewnicka 118B</p>
+            <p>Poland, Łódź, Łагевніцка 118B</p>
             <p>Телефон: +48 609 860 816</p>
             <p>Пошта: dariiaexpressphoto@gmail.com</p>
             <h3 className="mt-4 font-semibold">Послуги:</h3>
