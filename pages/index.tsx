@@ -1,3 +1,4 @@
+import imageCompression from 'browser-image-compression';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
@@ -28,9 +29,23 @@ export default function Home() {
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const file = e.target.files[0];
+  
+      try {
+        const options = {
+          maxSizeMB: 5,
+          maxWidthOrHeight: 5000,
+          useWebWorker: true,
+        };
+  
+        const compressedFile = await imageCompression(file, options);
+        setFile(compressedFile);
+      } catch (error) {
+        console.error('Помилка при обробці файлу:', error);
+        setFile(file); // якщо щось піде не так, беремо оригінал
+      }
     }
   };
 
