@@ -1,9 +1,8 @@
-// /pages/api/send-order.ts
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { File as FormidableFile } from 'formidable';
 import fs from 'fs';
 import axios from 'axios';
+import FormData from 'form-data'; // Ось це!
 
 export const config = {
   api: {
@@ -36,12 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ message: 'Bot token or chat ID missing' });
     }
 
-    const textMessage = `📸 *НОВЕ ЗАМОВЛЕННЯ*
-
-👤 *Ім'я:* ${name}
-📧 *Email/Телефон:* ${email}
-🖋️ *Деталі:* ${details}
-⏰ *Час:* ${time}`;
+    const textMessage = `\ud83d\udcf8 *НОВЕ ЗАМОВЛЕННЯ*\n\n\ud83d\udc64 *Ім'я:* ${name}\n\ud83d\udce7 *Email/Телефон:* ${email}\n\ud83d\udd8b\ufe0f *Деталі:* ${details}\n\u23f0 *Час:* ${time}`;
 
     try {
       const file = files.file && Array.isArray(files.file) ? files.file[0] : files.file as FormidableFile;
@@ -59,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
         await axios.post(`https://api.telegram.org/bot${botToken}/sendDocument`, formData, {
-          headers: formData.getHeaders(),
+          headers: formData.getHeaders(), // важливо!
         });
       } else {
         await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
