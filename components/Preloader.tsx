@@ -1,13 +1,12 @@
 // components/Preloader.tsx
-
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 export default function Preloader() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000); // показуємо 2 секунди
+    const timer = setTimeout(() => setLoading(false), 2000); // прелоадер 2 секунди
     return () => clearTimeout(timer);
   }, []);
 
