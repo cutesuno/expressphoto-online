@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import Preloader from '@/components/Preloader'; // Імпорт прелоадера
 
 export default function Home() {
   const [form, setForm] = useState({
