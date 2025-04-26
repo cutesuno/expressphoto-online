@@ -37,48 +37,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const message = `
 📸 НОВЕ ЗАМОВЛЕННЯ
 👤 Ім'я: ${name}
-📧 Контакт: ${email}
-🕒 Час замовлення: ${time}
+📧 Email/Телефон: ${email}
 📝 Деталі: ${details}
+🕒 Час: ${time}
 `;
 
       const file = files.file as FormidableFile;
-
       if (file && file.filepath) {
         const stream = fs.createReadStream(file.filepath);
         const formData = new FormData();
         formData.append('chat_id', TELEGRAM_CHAT_ID!);
+        formData.append('caption', message); // додаємо текст у caption
+        formData.append('document', stream, file.originalFilename || 'file');
 
-        if (file.mimetype?.startsWith('image/')) {
-          // Якщо фото
-          formData.append('photo', stream, {
-            filename: file.originalFilename || 'photo.jpg',
-            contentType: file.mimetype,
-          });
-          formData.append('caption', message);
-
-          await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, formData, {
-            headers: formData.getHeaders(),
-          });
-        } else {
-          // Якщо не фото
-          formData.append('document', stream, {
-            filename: file.originalFilename || 'file',
-            contentType: file.mimetype || 'application/octet-stream',
-          });
-          formData.append('caption', message);
-
-          await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, formData, {
-            headers: formData.getHeaders(),
-          });
-        }
-
-        // Після відправки можна почистити файл:
-        fs.unlink(file.filepath, (unlinkErr) => {
-          if (unlinkErr) console.error('Помилка видалення файлу:', unlinkErr);
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, formData, {
+          headers: formData.getHeaders(),
         });
       } else {
-        // Якщо файлу нема — шлемо тільки текст
+        // Якщо файл не завантажено — відправляємо просто текст
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           chat_id: TELEGRAM_CHAT_ID,
           text: message,
