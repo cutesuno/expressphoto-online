@@ -36,31 +36,45 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     const formData = new FormData();
     formData.append('name', form.name);
     formData.append('email', form.email);
     formData.append('details', form.details);
     formData.append('time', form.time);
     if (file) formData.append('file', file);
-
-    const res = await fetch('/api/send-order', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (res.ok) {
-      const checkout = await fetch('/api/create-checkout-session', {
+  
+    try {
+      // 1. Спочатку відправляємо замовлення
+      const res = await fetch('/api/send-order', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (!res.ok) {
+        throw new Error('Помилка надсилання форми');
+      }
+  
+      // 2. Після успішного надсилання створюємо Stripe-сесію
+      const stripeRes = await fetch('/api/create-checkout-session', {
         method: 'POST',
       });
-      const { url } = await checkout.json();
-      window.location.href = url;
-    } else {
-      alert('Помилка відправки форми.');
+  
+      const { sessionId } = await stripeRes.json();
+  
+      // 3. Редірект на Stripe
+      const stripe = await (await import('@stripe/stripe-js')).loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+      if (stripe) {
+        await stripe.redirectToCheckout({ sessionId });
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Сталася помилка. Спробуйте ще раз.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
-
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative">
       <button onClick={toggleLang} className="absolute top-4 right-4 text-2xl">
