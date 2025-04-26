@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { IncomingForm } from 'formidable';
+import { IncomingForm, File as FormidableFile } from 'formidable';
 import fs from 'fs';
 import axios from 'axios';
 import FormData from 'form-data';
@@ -29,41 +29,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const name = fields.name?.toString() || 'undefined';
-      const email = fields.email?.toString() || 'undefined';
-      const details = fields.details?.toString() || 'undefined';
-      const time = fields.time?.toString() || 'undefined';
+      const name = fields.name?.toString() || 'Без імені';
+      const email = fields.email?.toString() || 'Без пошти';
+      const details = fields.details?.toString() || 'Без деталей';
+      const time = fields.time?.toString() || 'Без часу';
 
       const message = `
-\ud83d\udcf8 НОВЕ ЗАМОВЛЕННЯ
-\ud83d\udc64 Ім'я: ${name}
-\ud83d\udce7 Email/Телефон: ${email}
-\ud83d\udcd2 Деталі: ${details}
-\u23f0 Час: ${time}
-      `;
+📸 НОВЕ ЗАМОВЛЕННЯ
+👤 Ім'я: ${name}
+📧 Емейл або телефон: ${email}
+📝 Деталі: ${details}
+⏰ Час замовлення: ${time}
+`;
 
-      // Надсилаємо текстове повідомлення
-      await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        chat_id: TELEGRAM_CHAT_ID,
-        text: message,
-      });
+      const file = files.file as FormidableFile;
 
-      // Якщо є файл — надсилаємо його окремо
-      const file = files.file as any;
       if (file && file.filepath) {
-        const stream = fs.createReadStream(file.filepath);
         const formData = new FormData();
         formData.append('chat_id', TELEGRAM_CHAT_ID!);
-        formData.append('document', stream, file.originalFilename || 'file');
+        formData.append('caption', message);
+        formData.append('document', fs.createReadStream(file.filepath), file.originalFilename || 'file.jpg');
 
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, formData, {
           headers: formData.getHeaders(),
+        });
+      } else {
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message,
         });
       }
 
       res.status(200).json({ message: 'OK' });
     } catch (error) {
-      console.error('Telegram send error:', error);
+      console.error('Telegram error:', error);
       res.status(500).json({ message: 'Failed to send to Telegram' });
     }
   });
