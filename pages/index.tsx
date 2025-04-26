@@ -87,93 +87,88 @@ export default function Home() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center bg-no-repeat flex flex-col items-center justify-center p-6 text-white relative"
-      style={{ backgroundImage: "url('/background.png')" }}
-    >
-      <button
-        onClick={toggleLang}
-        className="absolute top-4 right-4 text-2xl"
+    <>
+      <div
+        className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center text-white p-6 relative"
+        style={{ backgroundImage: 'url(/background.png)' }}
       >
-        {language === 'uk' ? '🇵🇱' : '🇺🇦'}
-      </button>
+        {/* Кнопка перемикання мови */}
+        <button
+          onClick={toggleLang}
+          className="absolute top-4 right-4 text-2xl"
+        >
+          {language === 'uk' ? '🇵🇱' : '🇺🇦'}
+        </button>
 
-      <button
-        onClick={() => setShowInfo(true)}
-        className="absolute top-4 left-4 text-xs md:text-sm underline"
-      >
-        {t('company')}
-      </button>
+        {/* Модалка інформації про компанію */}
+        <button
+          onClick={() => setShowInfo(true)}
+          className="absolute top-4 left-4 text-sm underline"
+        >
+          {t('company')}
+        </button>
 
-      {showInfo && (
-        <motion.div
-          className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center text-center p-6 z-50 overflow-y-auto"
+        {/* Інша частина сайту */}
+        <motion.h1
+          className="text-4xl font-bold mb-2"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          ExpressPhoto <span className="text-gray-400">Online</span>
+        </motion.h1>
+
+        <motion.p
+          className="text-gray-300 mb-6 text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <div className="bg-white text-black p-6 rounded-xl max-w-md w-full relative">
-            <button
-              onClick={() => setShowInfo(false)}
-              className="absolute top-2 right-3 text-xl"
-            >
-              ✖️
-            </button>
-            <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
-            <p>{t('intro')}</p>
-          </div>
-        </motion.div>
-      )}
+          {t('intro')}
+        </motion.p>
 
-      <motion.h1 className="text-4xl md:text-5xl font-bold mb-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        ExpressPhoto <span className="text-gray-400">Online</span>
-      </motion.h1>
-      <motion.p className="text-gray-300 mb-6 text-center text-sm md:text-base" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        {t('intro')}
-      </motion.p>
-
-      {!confirmed ? (
-        <motion.form
-          onSubmit={handleSubmit}
-          method="POST"
-          encType="multipart/form-data"
-          className="flex flex-col w-full max-w-md space-y-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <input name="name" placeholder={t('name')} onChange={handleChange} className="bg-gray-800 p-3 rounded text-sm md:text-base" required />
-          <input name="email" placeholder={t('email')} onChange={handleChange} className="bg-gray-800 p-3 rounded text-sm md:text-base" required />
-          <textarea name="details" placeholder={t('details')} onChange={handleChange} className="bg-gray-800 p-3 rounded text-sm md:text-base" required />
-          <input name="time" type="time" onChange={handleChange} className="bg-gray-800 p-3 rounded text-sm md:text-base" required />
-          <input type="file" name="file" onChange={handleFileChange} className="bg-gray-800 p-3 rounded text-sm md:text-base" />
-          <button type="submit" className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200 text-sm md:text-base">
-            {t('submit')}
-          </button>
-        </motion.form>
-      ) : (
-        <motion.div
-          className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <p>{t('thanks')}</p>
-          <button
-            onClick={() => {
-              setConfirmed(false);
-              setForm({ name: '', email: '', details: '', time: '' });
-              setFile(null);
-            }}
-            className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200 text-sm md:text-base"
+        {!confirmed ? (
+          <motion.form
+            onSubmit={handleSubmit}
+            method="POST"
+            encType="multipart/form-data"
+            className="flex flex-col w-full max-w-md space-y-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
           >
-            {t('back')}
-          </button>
-        </motion.div>
-      )}
+            <input name="name" placeholder={t('name')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
+            <input name="email" type="text" placeholder={t('email')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
+            <textarea name="details" placeholder={t('details')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
+            <input name="time" type="time" onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
+            <input type="file" name="file" onChange={handleFileChange} className="bg-gray-800 p-3 rounded" />
+            <button type="submit" className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200">
+              {t('submit')}
+            </button>
+          </motion.form>
+        ) : (
+          <motion.div
+            className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <p>{t('thanks')}</p>
+            <button
+              onClick={() => {
+                setConfirmed(false);
+                setForm({ name: '', email: '', details: '', time: '' });
+                setFile(null);
+              }}
+              className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200"
+            >
+              {t('back')}
+            </button>
+          </motion.div>
+        )}
 
-      <p className="text-xs md:text-sm text-gray-400 mt-10 text-center">
-        {t('address')}<br />
-        {t('phone')}<br />
-        {t('emailCompany')}
-      </p>
-    </div>
+        <p className="text-sm text-gray-400 mt-10 text-center">
+          {t('address')}<br />
+          {t('phone')}<br />
+          {t('emailCompany')}
+        </p>
+      </div>
+    </>
   );
 }
