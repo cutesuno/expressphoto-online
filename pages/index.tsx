@@ -102,6 +102,7 @@ export default function Home() {
                 <li>Ксерокопії А4, А3</li>
                 <li>Ламінація</li>
                 <li>Сканування</li>
+                <li>Та інші...</li>
               </ul>
             </div>
           </motion.div>
