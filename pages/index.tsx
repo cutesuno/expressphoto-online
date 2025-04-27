@@ -65,7 +65,10 @@ export default function Home() {
       name: { uk: "Ваше ім'я", pl: 'Imię' },
       email: { uk: "Емейл або телефон", pl: 'Email lub telefon' },
       details: { uk: 'Деталі замовлення', pl: 'Szczegóły zamówienia' },
-      time: { uk: 'Час замовлення', pl: 'Godzina odbioru' },
+      time: { 
+        uk: 'Оберіть час отримання', 
+        pl: 'Wybierz godzinę odbioru' 
+      },
       submit: { uk: 'Оформити замовлення', pl: 'Złóż zamówienie' },
       sending: { uk: 'Надсилаємо...', pl: 'Wysyłanie...' },
       thanks: { uk: 'Дякуємо за замовлення!', pl: 'Dziękujemy za zamówienie!' },
@@ -190,7 +193,14 @@ export default function Home() {
           <input name="name" placeholder={t('name')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input name="email" type="text" placeholder={t('email')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <textarea name="details" placeholder={t('details')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
-          <input name="time" type="time" onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
+          <input
+  name="time"
+  type="time"
+  onChange={handleChange}
+  placeholder={t('time')}
+  className="bg-gray-800 p-3 rounded placeholder-gray-400"
+  required
+/>
           <input type="file" name="file" onChange={handleFileChange} className="bg-gray-800 p-3 rounded" />
           <button type="submit" disabled={isSending} className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200">
             {isSending ? t('sending') : t('submit')}
