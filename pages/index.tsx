@@ -193,12 +193,12 @@ export default function Home() {
           <input name="name" placeholder={t('name')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <input name="email" type="text" placeholder={t('email')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
           <textarea name="details" placeholder={t('details')} onChange={handleChange} className="bg-gray-800 p-3 rounded" required />
-          <input
+          <label className="text-sm text-gray-400">{t('time')}</label>
+<input
   name="time"
   type="time"
   onChange={handleChange}
-  placeholder={t('time')}
-  className="bg-gray-800 p-3 rounded placeholder-gray-400"
+  className="bg-gray-800 p-3 rounded"
   required
 />
           <input type="file" name="file" onChange={handleFileChange} className="bg-gray-800 p-3 rounded" />
