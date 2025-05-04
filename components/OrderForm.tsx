@@ -1,3 +1,4 @@
+// components/OrderForm.tsx
 import { useState } from 'react';
 
 export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
@@ -6,10 +7,11 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
     email: '',
     details: '',
     time: '',
+    quantity: 1,
   });
   const [file, setFile] = useState<File | null>(null);
   const [selectedService, setSelectedService] = useState<{ label: string; price: number } | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const priceList = [
     {
@@ -66,21 +68,33 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.entries(form).forEach(([key, value]) => formData.append(key, value));
-    if (file) formData.append('file', file);
-    if (selectedService) {
-      formData.append('service', selectedService.label);
-      formData.append('price', (selectedService.price * quantity).toFixed(2));
-      formData.append('quantity', quantity.toString());
-    }
+    if (!selectedService) return;
+    setIsSubmitting(true);
 
-    await fetch('/api/send-order', {
+    const amount = Math.round(selectedService.price * form.quantity * 100); // в грошах * 100
+
+    const res = await fetch('/api/create-payment-session', {
       method: 'POST',
-      body: formData,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email,
+        details: form.details,
+        time: form.time,
+        service: selectedService.label,
+        price: selectedService.price,
+        quantity: Number(form.quantity),
+        amount,
+      }),
     });
 
-    alert('Замовлення надіслано!');
+    const data = await res.json();
+    setIsSubmitting(false);
+    if (data.redirectUrl) {
+      window.location.href = data.redirectUrl;
+    } else {
+      alert(language === 'uk' ? 'Помилка при створенні сесії оплати' : 'Błąd tworzenia sesji płatności');
+    }
   };
 
   return (
@@ -144,24 +158,15 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
         ))}
       </select>
 
-      <label className="text-sm text-gray-400">
-        {language === 'uk' ? 'Кількість' : 'Ilość'}
-      </label>
       <input
+        name="quantity"
         type="number"
         min={1}
-        value={quantity}
-        onChange={(e) => setQuantity(Number(e.target.value))}
+        value={form.quantity}
+        onChange={handleChange}
         className="bg-gray-800 p-3 rounded"
         required
       />
-
-      {selectedService && (
-        <div className="text-white text-sm">
-          {language === 'uk' ? 'Сума до оплати:' : 'Kwota do zapłaty:'}{' '}
-          <span className="font-semibold">{(selectedService.price * quantity).toFixed(2)} zł</span>
-        </div>
-      )}
 
       <input
         type="file"
@@ -171,9 +176,12 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
       />
       <button
         type="submit"
+        disabled={isSubmitting}
         className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200"
       >
-        {language === 'uk' ? 'Оформити замовлення' : 'Złóż zamówienie'}
+        {isSubmitting
+          ? language === 'uk' ? 'Надсилаємо...' : 'Wysyłanie...'
+          : language === 'uk' ? 'Оформити замовлення' : 'Złóż zamówienie'}
       </button>
     </form>
   );
