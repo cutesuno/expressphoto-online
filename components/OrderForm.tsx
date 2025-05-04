@@ -1,5 +1,4 @@
-// components/OrderForm.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
   const [form, setForm] = useState({
@@ -7,11 +6,11 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
     email: '',
     details: '',
     time: '',
-    quantity: 1,
   });
   const [file, setFile] = useState<File | null>(null);
   const [selectedService, setSelectedService] = useState<{ label: string; price: number } | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [totalPrice, setTotalPrice] = useState(0);
 
   const priceList = [
     {
@@ -56,6 +55,12 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
     },
   ];
 
+  useEffect(() => {
+    if (selectedService) {
+      setTotalPrice(selectedService.price * quantity);
+    }
+  }, [selectedService, quantity]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -68,33 +73,22 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedService) return;
-    setIsSubmitting(true);
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, value]) => formData.append(key, value));
+    if (file) formData.append('file', file);
+    if (selectedService) {
+      formData.append('service', selectedService.label);
+      formData.append('price', selectedService.price.toString());
+      formData.append('quantity', quantity.toString());
+      formData.append('total', totalPrice.toString());
+    }
 
-    const amount = Math.round(selectedService.price * form.quantity * 100); // в грошах * 100
-
-    const res = await fetch('/api/create-payment-session', {
+    await fetch('/api/send-order', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: form.name,
-        email: form.email,
-        details: form.details,
-        time: form.time,
-        service: selectedService.label,
-        price: selectedService.price,
-        quantity: Number(form.quantity),
-        amount,
-      }),
+      body: formData,
     });
 
-    const data = await res.json();
-    setIsSubmitting(false);
-    if (data.redirectUrl) {
-      window.location.href = data.redirectUrl;
-    } else {
-      alert(language === 'uk' ? 'Помилка при створенні сесії оплати' : 'Błąd tworzenia sesji płatności');
-    }
+    alert('Замовлення надіслано!');
   };
 
   return (
@@ -158,15 +152,23 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
         ))}
       </select>
 
+      <label className="text-sm text-gray-400">
+        {language === 'uk' ? 'Кількість' : 'Ilość'}
+      </label>
       <input
-        name="quantity"
         type="number"
         min={1}
-        value={form.quantity}
-        onChange={handleChange}
+        value={quantity}
+        onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
         className="bg-gray-800 p-3 rounded"
         required
       />
+
+      {selectedService && (
+        <p className="text-sm text-gray-300">
+          {language === 'uk' ? 'Сума до оплати' : 'Kwota do zapłaty'}: <strong>{totalPrice.toFixed(2)} zł</strong>
+        </p>
+      )}
 
       <input
         type="file"
@@ -176,12 +178,9 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
       />
       <button
         type="submit"
-        disabled={isSubmitting}
         className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200"
       >
-        {isSubmitting
-          ? language === 'uk' ? 'Надсилаємо...' : 'Wysyłanie...'
-          : language === 'uk' ? 'Оформити замовлення' : 'Złóż zamówienie'}
+        {language === 'uk' ? 'Оформити замовлення' : 'Złóż zamówienie'}
       </button>
     </form>
   );
