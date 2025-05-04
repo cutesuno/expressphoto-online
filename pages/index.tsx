@@ -226,11 +226,16 @@ export default function Home() {
         </motion.div>
       )}
 
-      <p className="text-sm text-gray-500 mt-10 text-center">
-        {t('address')}<br />
-        {t('phone')}<br />
-        {t('emailCompany')}
-      </p>
+<p className="text-sm text-gray-500 mt-10 text-center">
+  {t('address')}<br />
+  {t('phone')}<br />
+  {t('emailCompany')}<br />
+  {
+    language === 'uk'
+      ? 'Графік роботи: Пн–Пт 9:00–17:00, Сб 10:00–13:00, Нд – вихідний'
+      : 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne'
+  }
+</p>
     </div>
   );
 }
