@@ -9,19 +9,48 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
     time: '',
   });
 
-  const services = [
-    { label: '(3,5 x 4,5) – 4 шт', price: 40 },
-    { label: '(3,5 x 4,5) – 6 шт', price: 45 },
-    { label: '(3,5 x 4,5) – 12 шт', price: 55 },
-    { label: '(4,5 x 6,5) – 4 шт', price: 45 },
-    { label: '(4,5 x 6,5) – 8 шт', price: 55 },
-    { label: 'Електронна версія', price: 5 },
-    { label: 'Друк фото 10x15', price: 2.3 },
-    { label: 'Копії А4 ч/б', price: 1 },
-    { label: 'Копії А4 кольорові', price: 2.5 },
-    { label: 'Ламінування A4', price: 7 },
-    { label: 'Сканування A4', price: 3 },
-  ];
+  const prices: { [key: string]: { label: string; price: number }[] } = {
+    photos: [
+      { label: '(3,5 x 4,5) – 4', price: 40 },
+      { label: '(3,5 x 4,5) – 6', price: 45 },
+      { label: '(3,5 x 4,5) – 12', price: 55 },
+      { label: '(4,5 x 6,5) – 4', price: 45 },
+      { label: '(4,5 x 6,5) – 8', price: 55 },
+      { label: t('Електронна версія', 'Wersja elektroniczna'), price: 5 },
+    ],
+    printing: [
+      { label: '9x13', price: 1.7 },
+      { label: '10x15', price: 2.3 },
+      { label: '13x18', price: 3 },
+      { label: '15x21', price: 6 },
+      { label: '21x30', price: 17 },
+      { label: '30x40', price: 40 },
+      { label: '30x45', price: 40 },
+      { label: '33x48', price: 55 },
+    ],
+    laminate: [
+      { label: 'A3', price: 14 },
+      { label: 'A4', price: 7 },
+      { label: 'A5', price: 4 },
+      { label: 'A6', price: 3 },
+      { label: '6,5x9,5', price: 2 },
+      { label: '5,4x8,6', price: 2 },
+    ],
+    copy: [
+      { label: t('1–10 стор.', '1–10 str.'), price: 1 },
+      { label: '11–50', price: 0.9 },
+      { label: '51–100', price: 0.8 },
+      { label: 'A3', price: 1.5 },
+    ],
+    color: [
+      { label: 'A4', price: 2.5 },
+      { label: 'A3', price: 5 },
+    ],
+    scan: [
+      { label: 'A3', price: 6 },
+      { label: 'A4', price: 3 },
+    ],
+  };
 
   const t = (uk: string, pl: string) => (language === 'uk' ? uk : pl);
 
