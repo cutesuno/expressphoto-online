@@ -11,7 +11,8 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
   const [sending, setSending] = useState(false);
 
   const services = [
-    { label: { uk: 'Фото на документи', pl: 'Zdjęcia do dokumentów' }, price: 20 },
+    { label: { uk: 'Фото на документи(4шт)', pl: 'Zdjęcia do dokumentów' }, price: 40 },
+    { label: { uk: 'Фото на документи(6шт)', pl: 'Zdjęcia do dokumentów' }, price: 45 },
     { label: { uk: 'Копія A4 ч/б', pl: 'Kopia A4 cz-b' }, price: 0.5 },
     { label: { uk: 'Копія A4 кольорова', pl: 'Kopia A4 kolorowa' }, price: 1 },
     { label: { uk: 'Сканування', pl: 'Skanowanie' }, price: 1 },
