@@ -1,7 +1,8 @@
-import PriceModal from '../components/PriceModal';
-import OrderForm from '../components/OrderForm';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import PriceModal from '../components/PriceModal';
+import OrderForm from '../components/OrderForm';
+import CompanyInfoModal from '../components/CompanyInfoModal';
 
 export default function Home() {
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
@@ -10,9 +11,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
+    const timer = setTimeout(() => setIsLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -57,47 +56,17 @@ export default function Home() {
       </button>
 
       <div className="absolute top-4 left-4 flex gap-4">
-        <button
-          onClick={() => setShowInfo(true)}
-          className="text-sm underline"
-        >
+        <button onClick={() => setShowInfo(true)} className="text-sm underline">
           {t('company')}
         </button>
 
-        <button
-          onClick={() => setShowPrices(true)}
-          className="text-sm underline"
-        >
+        <button onClick={() => setShowPrices(true)} className="text-sm underline">
           {t('prices')}
         </button>
       </div>
 
       {showInfo && (
-        <motion.div
-          className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center text-center p-6 z-50 overflow-y-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div className="bg-white text-black p-6 rounded-xl max-w-md w-full relative space-y-4">
-            <button
-              onClick={() => setShowInfo(false)}
-              className="absolute top-2 right-3 text-xl"
-            >
-              ✖️
-            </button>
-            <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
-            <ul className="text-left space-y-1 text-sm">
-              <li>{t('address')}</li>
-              <li>{t('phone')}</li>
-              <li>{t('emailCompany')}</li>
-              <li>
-                {language === 'uk'
-                  ? 'Графік роботи: Пн–Пт 9:00–17:00, Сб 10:00–13:00, Нд – вихідний'
-                  : 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne'}
-              </li>
-            </ul>
-          </div>
-        </motion.div>
+        <CompanyInfoModal language={language} onClose={() => setShowInfo(false)} />
       )}
 
       {showPrices && (
