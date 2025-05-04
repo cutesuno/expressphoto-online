@@ -73,6 +73,10 @@ export default function Home() {
       sending: { uk: 'Надсилаємо...', pl: 'Wysyłanie...' },
       thanks: { uk: 'Дякуємо за замовлення!', pl: 'Dziękujemy za zamówienie!' },
       back: { uk: 'Оформити нове замовлення', pl: 'Złóż nowe zamówienie' },
+      contactUs: {
+        uk: 'Звʼяжіться з нами',
+        pl: 'Skontaktuj się z nami',
+      },
       company: { uk: 'Інформація про компанію', pl: 'Informacje o firmie' },
       address: { uk: 'Poland, Łódź, Łagiewnicka 118B', pl: 'Polska, Łódź, Łagiewnicka 118B' },
       phone: { uk: 'Телефон: +48 609 860 816', pl: 'Telefon: +48 609 860 816' },
