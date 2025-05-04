@@ -4,20 +4,16 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [confirmed, setConfirmed] = useState(false);
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
   const [showInfo, setShowInfo] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
+    const timer = setTimeout(() => setIsLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
 
-  const toggleLang = () => setLanguage(language === 'uk' ? 'pl' : 'uk');
+  const [isLoading, setIsLoading] = useState(true);
 
   const t = (key: string) => {
     const dict: any = {
@@ -25,29 +21,22 @@ export default function Home() {
         uk: 'Онлайн-друк, фото на документи, ксерокопії та більше',
         pl: 'Druk online, zdjęcia do dokumentów, kserokopie i więcej',
       },
-      thanks: { uk: 'Дякуємо за замовлення!', pl: 'Dziękujemy za zamówienie!' },
-      back: { uk: 'Оформити нове замовлення', pl: 'Złóż nowe zamówienie' },
       contactUs: {
         uk: 'Звʼяжіться з нами',
         pl: 'Skontaktuj się z nami',
       },
       company: { uk: 'Інформація про компанію', pl: 'Informacje o firmie' },
+      prices: { uk: 'Прайс', pl: 'Cennik' },
       address: { uk: 'Poland, Łódź, Łagiewnicka 118B', pl: 'Polska, Łódź, Łagiewnicka 118B' },
       phone: { uk: 'Телефон: +48 609 860 816', pl: 'Telefon: +48 609 860 816' },
       emailCompany: { uk: 'Пошта: dariiaexpressphoto@gmail.com', pl: 'Email: dariiaexpressphoto@gmail.com' },
-      prices: { uk: 'Прайс', pl: 'Cennik' },
     };
     return dict[key]?.[language] || key;
   };
 
   if (isLoading) {
     return (
-      <motion.div
-        className="min-h-screen flex items-center justify-center bg-black text-white text-3xl font-bold"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 0 }}
-        transition={{ duration: 1 }}
-      >
+      <motion.div className="min-h-screen flex items-center justify-center bg-black text-white text-3xl font-bold" initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: 1 }}>
         Welcome to EXPRESS PHOTO ONLINE
       </motion.div>
     );
@@ -55,10 +44,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative">
-      <button
-        onClick={toggleLang}
-        className="absolute top-4 right-4 text-2xl"
-      >
+      <button onClick={() => setLanguage(language === 'uk' ? 'pl' : 'uk')} className="absolute top-4 right-4 text-2xl">
         {language === 'uk' ? '🇵🇱' : '🇺🇦'}
       </button>
 
@@ -79,19 +65,9 @@ export default function Home() {
       </button>
 
       {showInfo && (
-        <motion.div
-          className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center text-center p-6 z-50 overflow-y-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
+        <motion.div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center text-center p-6 z-50 overflow-y-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="bg-white text-black p-6 rounded-xl max-w-md w-full relative space-y-4">
-            <button
-              onClick={() => setShowInfo(false)}
-              className="absolute top-2 right-3 text-xl"
-            >
-              ✖️
-            </button>
-
+            <button onClick={() => setShowInfo(false)} className="absolute top-2 right-3 text-xl">✖️</button>
             {language === 'uk' ? (
               <>
                 <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
@@ -105,6 +81,10 @@ export default function Home() {
                   <li>Сканування документів</li>
                   <li>Друк фотографій та документів</li>
                 </ul>
+                <h3 className="font-semibold mt-4">Контакти:</h3>
+                <p>{t('phone')}</p>
+                <p>{t('emailCompany')}</p>
+                <p>{t('address')}</p>
               </>
             ) : (
               <>
@@ -119,45 +99,25 @@ export default function Home() {
                   <li>Skanowanie dokumentów</li>
                   <li>Drukowanie zdjęć i dokumentów</li>
                 </ul>
+                <h3 className="font-semibold mt-4">Kontakt:</h3>
+                <p>{t('phone')}</p>
+                <p>{t('emailCompany')}</p>
+                <p>{t('address')}</p>
               </>
             )}
           </div>
         </motion.div>
       )}
 
-      <motion.h1
-        className="text-4xl font-bold mb-2 text-center"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.h1 className="text-4xl font-bold mb-2 text-center" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         ExpressPhoto <span className="text-gray-400">Online</span>
       </motion.h1>
-
-      <motion.p
-        className="text-gray-300 mb-6 text-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
+      <motion.p className="text-gray-300 mb-6 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         {t('intro')}
       </motion.p>
 
-      {!confirmed ? (
-        <OrderForm language={language} />
-      ) : (
-        <motion.div
-          className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <p>{t('thanks')}</p>
-          <button
-            onClick={() => setConfirmed(false)}
-            className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200"
-          >
-            {t('back')}
-          </button>
-        </motion.div>
-      )}
+      {/* ВСТАВЛЕНИЙ КОМПОНЕНТ ЗАМОВЛЕННЯ ЗА ПРАЙСОМ */}
+      <OrderForm language={language} />
 
       {showPrices && (
         <PriceModal language={language} onClose={() => setShowPrices(false)} />
@@ -167,11 +127,9 @@ export default function Home() {
         {t('address')}<br />
         {t('phone')}<br />
         {t('emailCompany')}<br />
-        {
-          language === 'uk'
-            ? 'Графік роботи: Пн–Пт 9:00–17:00, Сб 10:00–13:00, Нд – вихідний'
-            : 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne'
-        }
+        {language === 'uk'
+          ? 'Графік роботи: Пн–Пт 9:00–17:00, Сб 10:00–13:00, Нд – вихідний'
+          : 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne'}
       </p>
 
       <a
