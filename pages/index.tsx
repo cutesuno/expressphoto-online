@@ -240,7 +240,7 @@ export default function Home() {
   href="mailto:dariiaexpressphoto@gmail.com"
   className="fixed bottom-6 right-6 bg-white text-black font-semibold px-4 py-2 rounded-full shadow-lg border border-gray-300 hover:bg-gray-100 transition-all z-50 flex items-center gap-2 text-sm sm:text-base"
 >
-  <span role="img" aria-label="mail">✉️</span> Написати
+  <span role="img" aria-label="mail">✉️</span> Звʼяжіться з нами
 </a>
     </div>
   );
