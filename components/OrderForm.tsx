@@ -6,6 +6,7 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
     email: '',
     details: '',
     time: '',
+    quantity: 1,
   });
   const [file, setFile] = useState<File | null>(null);
   const [selectedService, setSelectedService] = useState<{ label: string; price: number } | null>(null);
@@ -65,20 +66,32 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.entries(form).forEach(([key, value]) => formData.append(key, value));
-    if (file) formData.append('file', file);
-    if (selectedService) {
-      formData.append('service', selectedService.label);
-      formData.append('price', selectedService.price.toString());
-    }
 
-    await fetch('/api/send-order', {
+    if (!selectedService) return;
+    const totalAmount = selectedService.price * Number(form.quantity);
+
+    // Переходимо до P24
+    const res = await fetch('/api/start-payment', {
       method: 'POST',
-      body: formData,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email,
+        details: form.details,
+        time: form.time,
+        service: selectedService.label,
+        price: selectedService.price,
+        quantity: form.quantity,
+        total: totalAmount,
+      }),
     });
 
-    alert('Замовлення надіслано!');
+    const data = await res.json();
+    if (data && data.redirectUrl) {
+      window.location.href = data.redirectUrl;
+    } else {
+      alert('Помилка при створенні платежу');
+    }
   };
 
   return (
@@ -141,6 +154,19 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
           </optgroup>
         ))}
       </select>
+
+      <label className="text-sm text-gray-400">
+        {language === 'uk' ? 'Кількість' : 'Ilość'}
+      </label>
+      <input
+        type="number"
+        name="quantity"
+        min="1"
+        value={form.quantity}
+        onChange={handleChange}
+        className="bg-gray-800 p-3 rounded"
+        required
+      />
 
       <input
         type="file"
