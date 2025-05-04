@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
+  const router = useRouter();
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -73,39 +75,39 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!selectedService) return;
 
-    const body = {
-      ...form,
-      service: selectedService.label,
-      quantity,
-      total: totalPrice,
-    };
-
-    const res = await fetch('/api/create-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    const result = await res.json();
-    if (result && result.redirectUrl) {
-      // Optional: upload file before redirect
-      if (file) {
-        const uploadForm = new FormData();
-        uploadForm.append('file', file);
-        uploadForm.append('sessionId', result.sessionId);
-        await fetch('/api/upload-file', {
-          method: 'POST',
-          body: uploadForm,
-        });
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+    
+      if (!selectedService) {
+        alert(language === 'uk' ? 'Оберіть послугу' : 'Wybierz usługę');
+        return;
       }
-
-      window.location.href = result.redirectUrl;
-    } else {
-      alert('Помилка створення платежу.');
-    }
-  };
+    
+      const response = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          service: selectedService.label,
+          unitPrice: selectedService.price,
+          quantity,
+          total: totalPrice,
+        }),
+      });
+    
+      const data = await response.json();
+    
+      if (data && data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        alert(language === 'uk'
+          ? 'Не вдалося створити оплату. Спробуйте пізніше.'
+          : 'Nie udało się utworzyć płatności. Spróbuj ponownie.');
+      }
+    };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col w-full max-w-md space-y-4">
@@ -196,7 +198,7 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
         type="submit"
         className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200"
       >
-        {language === 'uk' ? 'Перейти до оплати' : 'Przejdź do płatności'}
+        {language === 'uk' ? 'Оформити замовлення' : 'Złóż zamówienie'}
       </button>
     </form>
   );
