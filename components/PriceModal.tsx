@@ -62,7 +62,7 @@ export default function PriceModal({
           <h2 className="text-2xl font-bold mb-4 text-center">
             {t('Прайс / Ціни за послуги', 'Cennik usług')}
           </h2>
-          <div className="space-y-4 text-sm">
+          <div className="space-y-4 text-sm text-center">
             <div>
               <h3 className="font-semibold">{t('Фото на документи', 'Zdjęcia do dokumentów')}</h3>
               <ul>
