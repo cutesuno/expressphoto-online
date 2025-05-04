@@ -6,10 +6,10 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
     email: '',
     details: '',
     time: '',
-    quantity: 1,
   });
   const [file, setFile] = useState<File | null>(null);
   const [selectedService, setSelectedService] = useState<{ label: string; price: number } | null>(null);
+  const [quantity, setQuantity] = useState(1);
 
   const priceList = [
     {
@@ -66,32 +66,21 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, value]) => formData.append(key, value));
+    if (file) formData.append('file', file);
+    if (selectedService) {
+      formData.append('service', selectedService.label);
+      formData.append('price', (selectedService.price * quantity).toFixed(2));
+      formData.append('quantity', quantity.toString());
+    }
 
-    if (!selectedService) return;
-    const totalAmount = selectedService.price * Number(form.quantity);
-
-    // Переходимо до P24
-    const res = await fetch('/api/start-payment', {
+    await fetch('/api/send-order', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: form.name,
-        email: form.email,
-        details: form.details,
-        time: form.time,
-        service: selectedService.label,
-        price: selectedService.price,
-        quantity: form.quantity,
-        total: totalAmount,
-      }),
+      body: formData,
     });
 
-    const data = await res.json();
-    if (data && data.redirectUrl) {
-      window.location.href = data.redirectUrl;
-    } else {
-      alert('Помилка при створенні платежу');
-    }
+    alert('Замовлення надіслано!');
   };
 
   return (
@@ -160,13 +149,19 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
       </label>
       <input
         type="number"
-        name="quantity"
-        min="1"
-        value={form.quantity}
-        onChange={handleChange}
+        min={1}
+        value={quantity}
+        onChange={(e) => setQuantity(Number(e.target.value))}
         className="bg-gray-800 p-3 rounded"
         required
       />
+
+      {selectedService && (
+        <div className="text-white text-sm">
+          {language === 'uk' ? 'Сума до оплати:' : 'Kwota do zapłaty:'}{' '}
+          <span className="font-semibold">{(selectedService.price * quantity).toFixed(2)} zł</span>
+        </div>
+      )}
 
       <input
         type="file"
