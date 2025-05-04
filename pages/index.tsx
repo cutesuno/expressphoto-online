@@ -1,10 +1,11 @@
 import PriceModal from '../components/PriceModal';
-import OrderFormFromPrice from '../components/OrderForm';
+import OrderForm from '../components/OrderForm';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
+  const [confirmed, setConfirmed] = useState(false);
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
   const [showInfo, setShowInfo] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
@@ -24,15 +25,17 @@ export default function Home() {
         uk: 'Онлайн-друк, фото на документи, ксерокопії та більше',
         pl: 'Druk online, zdjęcia do dokumentów, kserokopie i więcej',
       },
+      thanks: { uk: 'Дякуємо за замовлення!', pl: 'Dziękujemy za zamówienie!' },
+      back: { uk: 'Оформити нове замовлення', pl: 'Złóż nowe zamówienie' },
       contactUs: {
         uk: 'Звʼяжіться з нами',
         pl: 'Skontaktuj się z nami',
       },
       company: { uk: 'Інформація про компанію', pl: 'Informacje o firmie' },
-      prices: { uk: 'Прайс', pl: 'Cennik' },
       address: { uk: 'Poland, Łódź, Łagiewnicka 118B', pl: 'Polska, Łódź, Łagiewnicka 118B' },
       phone: { uk: 'Телефон: +48 609 860 816', pl: 'Telefon: +48 609 860 816' },
       emailCompany: { uk: 'Пошта: dariiaexpressphoto@gmail.com', pl: 'Email: dariiaexpressphoto@gmail.com' },
+      prices: { uk: 'Прайс', pl: 'Cennik' },
     };
     return dict[key]?.[language] || key;
   };
@@ -52,7 +55,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative">
-      <button onClick={toggleLang} className="absolute top-4 right-4 text-2xl">
+      <button
+        onClick={toggleLang}
+        className="absolute top-4 right-4 text-2xl"
+      >
         {language === 'uk' ? '🇵🇱' : '🇺🇦'}
       </button>
 
@@ -65,7 +71,10 @@ export default function Home() {
         </button>
       </div>
 
-      <button onClick={() => setShowInfo(true)} className="absolute top-4 left-4 text-sm underline">
+      <button
+        onClick={() => setShowInfo(true)}
+        className="absolute top-4 left-4 text-sm underline"
+      >
         {t('company')}
       </button>
 
@@ -82,11 +91,36 @@ export default function Home() {
             >
               ✖️
             </button>
-            <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
-            <p>{language === 'uk' ? 'Контакти' : 'Kontakt'}:</p>
-            <p>{t('phone')}</p>
-            <p>{t('emailCompany')}</p>
-            <p>{t('address')}</p>
+
+            {language === 'uk' ? (
+              <>
+                <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
+                <h3 className="font-semibold">Опис послуг:</h3>
+                <ul className="list-disc pl-5 text-left space-y-1">
+                  <li>Фотосесії (портретні, вагітність, народження, групові фото)</li>
+                  <li>Весільні та заручальні фотосесії</li>
+                  <li>Відновлення та ретуш фотографій</li>
+                  <li>Ксерокопії ч/б та кольорові (A3, A4)</li>
+                  <li>Ламінування документів</li>
+                  <li>Сканування документів</li>
+                  <li>Друк фотографій та документів</li>
+                </ul>
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold mb-4">ExpressPhoto Online</h2>
+                <h3 className="font-semibold">Opis usług:</h3>
+                <ul className="list-disc pl-5 text-left space-y-1">
+                  <li>Sesje zdjęciowe (portretowe, ciążowe, narodzinowe, grupowe)</li>
+                  <li>Sesje ślubne i zaręczynowe</li>
+                  <li>Renowacja i retusz fotografii</li>
+                  <li>Kserokopie czarno-białe i kolorowe (A3, A4)</li>
+                  <li>Laminowanie dokumentów</li>
+                  <li>Skanowanie dokumentów</li>
+                  <li>Drukowanie zdjęć i dokumentów</li>
+                </ul>
+              </>
+            )}
           </div>
         </motion.div>
       )}
@@ -107,7 +141,23 @@ export default function Home() {
         {t('intro')}
       </motion.p>
 
-      <OrderFormFromPrice language={language} />
+      {!confirmed ? (
+        <OrderForm language={language} />
+      ) : (
+        <motion.div
+          className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <p>{t('thanks')}</p>
+          <button
+            onClick={() => setConfirmed(false)}
+            className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200"
+          >
+            {t('back')}
+          </button>
+        </motion.div>
+      )}
 
       {showPrices && (
         <PriceModal language={language} onClose={() => setShowPrices(false)} />
