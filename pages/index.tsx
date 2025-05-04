@@ -1,4 +1,4 @@
-import PriceModal from '@/components/PriceModal';
+import PriceModal from '../components/PriceModal';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
