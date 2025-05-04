@@ -14,6 +14,21 @@ export default function Success() {
         setStatus('error');
         return;
       }
+      useEffect(() => {
+        const order = localStorage.getItem('express_order');
+        if (!order) return;
+      
+        const formData = new FormData();
+        const parsed = JSON.parse(order);
+        Object.entries(parsed).forEach(([key, value]) => formData.append(key, String(value)));
+      
+        fetch('/api/send-order', {
+          method: 'POST',
+          body: formData,
+        });
+      
+        localStorage.removeItem('express_order');
+      }, []);
 
       try {
         const res = await fetch('/api/verify-payment', {

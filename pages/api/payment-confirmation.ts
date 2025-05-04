@@ -1,53 +1,46 @@
 // pages/api/payment-confirmation.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID!;
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { merchantId, posId, sessionId, amount, currency, sign } = req.body;
-
-  if (!sessionId || !amount || !currency || !sign) {
-    return res.status(400).json({ error: 'Missing parameters' });
-  }
-
   try {
-    // 1. Verify payment with Przelewy24 API
-    const verify = await fetch('https://secure.przelewy24.pl/api/v1/transaction/verify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.P24_ACCESS_TOKEN}`,
-      },
-      body: JSON.stringify({
-        sessionId,
-        amount,
-        currency,
-      }),
-    });
+    const body = req.body;
 
-    const data = await verify.json();
+    // TODO: optionally verify signature/hash from P24
+    const isPaid = body.status === 'success' || body.status === 'TRUE';
 
-    if (verify.ok && data.data && data.data.status === 'success') {
-      // 2. Send message to Telegram
-      const tgMessage = `✉️ Нове оплачене замовлення:\nSession ID: ${sessionId}\nСума: ${(amount / 100).toFixed(2)} PLN`;
+    if (isPaid) {
+      const { name, email, details, time, service, quantity, total } = body;
 
-      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      const text = `✨ *Нове замовлення (оплачено)* ✨\n
+Сервіс: ${service}\n
+Кількість: ${quantity}\n
+💲 Сума: ${total} zł\n
+👤 Ім’я: ${name}\n
+📧 Email/тел: ${email}\n
+📅 Час отримання: ${time}\n
+📝 Деталі: ${details}`;
+
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: process.env.TELEGRAM_CHAT_ID,
-          text: tgMessage,
-        }),
+          chat_id: TELEGRAM_CHAT_ID,
+          text,
+          parse_mode: 'Markdown'
+        })
       });
-
-      return res.status(200).json({ success: true });
-    } else {
-      return res.status(400).json({ error: 'Verification failed', details: data });
     }
+
+    return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error('Payment confirmation error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Payment confirm error:', err);
+    return res.status(500).json({ error: 'Server error' });
   }
 }

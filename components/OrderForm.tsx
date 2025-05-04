@@ -72,7 +72,21 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
       setFile(e.target.files[0]);
     }
   };
-  
+
+  const saveOrderToLocalStorage = () => {
+    const order = {
+      name: form.name,
+      email: form.email,
+      details: form.details,
+      time: form.time,
+      service: selectedService?.label,
+      price: selectedService?.price,
+      quantity,
+      total: totalPrice,
+    };
+    localStorage.setItem('express_order', JSON.stringify(order));
+  };
+
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
     
@@ -96,7 +110,9 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
       const data = await response.json();
     
       if (data && data.redirectUrl) {
-        window.location.href = data.redirectUrl;
+  saveOrderToLocalStorage();
+  window.location.href = data.redirectUrl;
+}
       } else {
         alert(language === 'uk'
           ? 'Не вдалося створити оплату. Спробуйте пізніше.'
