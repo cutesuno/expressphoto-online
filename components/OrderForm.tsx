@@ -110,16 +110,16 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
       const data = await response.json();
     
       if (data && data.redirectUrl) {
-  saveOrderToLocalStorage();
-  window.location.href = data.redirectUrl;
-}
+        window.location.href = data.redirectUrl;
       } else {
-        alert(language === 'uk'
-          ? 'Не вдалося створити оплату. Спробуйте пізніше.'
-          : 'Nie udało się utworzyć płatności. Spróbuj ponownie.');
+        alert(
+          language === 'uk'
+            ? 'Не вдалося створити оплату. Спробуйте пізніше.'
+            : 'Nie udało się utworzyć płatności. Spróbuj ponownie.'
+        );
       }
-    };
-
+      
+    }
   return (
     <form onSubmit={handleSubmit} className="flex flex-col w-full max-w-md space-y-4">
       <input
