@@ -72,12 +72,7 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
       setFile(e.target.files[0]);
     }
   };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!selectedService) return;
-
+  
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
     
