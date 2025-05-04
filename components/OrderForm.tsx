@@ -16,11 +16,11 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
     {
       category: language === 'uk' ? 'Фото на документи' : 'Zdjęcia do dokumentów',
       items: [
-        ['(3,5 x 4,5) – 4шт', 40],
-        ['(3,5 x 4,5) – 6', 45],
-        ['(3,5 x 4,5) – 12', 55],
-        ['(4,5 x 6,5) – 4', 45],
-        ['(4,5 x 6,5) – 8', 55],
+        ['(3,5 x 4,5) – 4x', 40],
+        ['(3,5 x 4,5) – 6x', 45],
+        ['(3,5 x 4,5) – 12x', 55],
+        ['(4,5 x 6,5) – 4x', 45],
+        ['(4,5 x 6,5) – 8x', 55],
         [language === 'uk' ? 'Електронна версія' : 'Wersja elektroniczna', 5],
       ],
     },
