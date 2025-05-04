@@ -16,7 +16,7 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
     {
       category: language === 'uk' ? 'Фото на документи' : 'Zdjęcia do dokumentów',
       items: [
-        ['(3,5 x 4,5) – 4', 40],
+        ['(3,5 x 4,5) – 4шт', 40],
         ['(3,5 x 4,5) – 6', 45],
         ['(3,5 x 4,5) – 12', 55],
         ['(4,5 x 6,5) – 4', 45],
