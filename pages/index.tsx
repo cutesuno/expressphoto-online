@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
+  const [confirmed, setConfirmed] = useState(false);
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
   const [showInfo, setShowInfo] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
@@ -24,15 +25,17 @@ export default function Home() {
         uk: 'Онлайн-друк, фото на документи, ксерокопії та більше',
         pl: 'Druk online, zdjęcia do dokumentów, kserokopie i więcej',
       },
+      thanks: { uk: 'Дякуємо за замовлення!', pl: 'Dziękujemy za zamówienie!' },
+      back: { uk: 'Оформити нове замовлення', pl: 'Złóż nowe zamówienie' },
       contactUs: {
         uk: 'Звʼяжіться з нами',
         pl: 'Skontaktuj się z nami',
       },
       company: { uk: 'Інформація про компанію', pl: 'Informacje o firmie' },
-      prices: { uk: 'Прайс', pl: 'Cennik' },
       address: { uk: 'Poland, Łódź, Łagiewnicka 118B', pl: 'Polska, Łódź, Łagiewnicka 118B' },
       phone: { uk: 'Телефон: +48 609 860 816', pl: 'Telefon: +48 609 860 816' },
       emailCompany: { uk: 'Пошта: dariiaexpressphoto@gmail.com', pl: 'Email: dariiaexpressphoto@gmail.com' },
+      prices: { uk: 'Прайс', pl: 'Cennik' },
     };
     return dict[key]?.[language] || key;
   };
@@ -102,10 +105,6 @@ export default function Home() {
                   <li>Сканування документів</li>
                   <li>Друк фотографій та документів</li>
                 </ul>
-                <h3 className="font-semibold mt-4">Контакти:</h3>
-                <p>{t('phone')}</p>
-                <p>{t('emailCompany')}</p>
-                <p>{t('address')}</p>
               </>
             ) : (
               <>
@@ -120,10 +119,6 @@ export default function Home() {
                   <li>Skanowanie dokumentów</li>
                   <li>Drukowanie zdjęć i dokumentów</li>
                 </ul>
-                <h3 className="font-semibold mt-4">Kontakt:</h3>
-                <p>{t('phone')}</p>
-                <p>{t('emailCompany')}</p>
-                <p>{t('address')}</p>
               </>
             )}
           </div>
@@ -146,7 +141,23 @@ export default function Home() {
         {t('intro')}
       </motion.p>
 
-      <OrderForm language={language} />
+      {!confirmed ? (
+        <OrderForm language={language} />
+      ) : (
+        <motion.div
+          className="text-green-400 text-xl font-semibold mt-4 flex flex-col items-center space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <p>{t('thanks')}</p>
+          <button
+            onClick={() => setConfirmed(false)}
+            className="bg-white text-black font-bold py-2 px-4 rounded hover:bg-gray-200"
+          >
+            {t('back')}
+          </button>
+        </motion.div>
+      )}
 
       {showPrices && (
         <PriceModal language={language} onClose={() => setShowPrices(false)} />
