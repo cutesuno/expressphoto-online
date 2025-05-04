@@ -1,5 +1,5 @@
 import PriceModal from '../components/PriceModal';
-import OrderFormFromPrice from '../components/OrderFormFromPrice';
+import OrderFormFromPrice from '../components/OrderFrom';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
