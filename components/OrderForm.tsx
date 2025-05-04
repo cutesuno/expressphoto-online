@@ -73,22 +73,38 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.entries(form).forEach(([key, value]) => formData.append(key, value));
-    if (file) formData.append('file', file);
-    if (selectedService) {
-      formData.append('service', selectedService.label);
-      formData.append('price', selectedService.price.toString());
-      formData.append('quantity', quantity.toString());
-      formData.append('total', totalPrice.toString());
-    }
+    if (!selectedService) return;
 
-    await fetch('/api/send-order', {
+    const body = {
+      ...form,
+      service: selectedService.label,
+      quantity,
+      total: totalPrice,
+    };
+
+    const res = await fetch('/api/create-payment', {
       method: 'POST',
-      body: formData,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
 
-    alert('Замовлення надіслано!');
+    const result = await res.json();
+    if (result && result.redirectUrl) {
+      // Optional: upload file before redirect
+      if (file) {
+        const uploadForm = new FormData();
+        uploadForm.append('file', file);
+        uploadForm.append('sessionId', result.sessionId);
+        await fetch('/api/upload-file', {
+          method: 'POST',
+          body: uploadForm,
+        });
+      }
+
+      window.location.href = result.redirectUrl;
+    } else {
+      alert('Помилка створення платежу.');
+    }
   };
 
   return (
@@ -180,7 +196,7 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
         type="submit"
         className="bg-white text-black font-bold py-2 rounded hover:bg-gray-200"
       >
-        {language === 'uk' ? 'Оформити замовлення' : 'Złóż zamówienie'}
+        {language === 'uk' ? 'Перейти до оплати' : 'Przejdź do płatności'}
       </button>
     </form>
   );
