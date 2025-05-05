@@ -96,6 +96,7 @@ export default function Home() {
         {t('address')}<br />
         {t('phone')}<br />
         {t('emailCompany')}<br />
+        
         <a
   href="/privacy-policy"
   className="underline text-sm text-blue-400 hover:text-blue-300 mt-2 inline-block"
