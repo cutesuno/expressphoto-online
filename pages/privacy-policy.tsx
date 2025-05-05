@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
           onClick={toggleLanguage}
           className="absolute top-6 right-6 text-xl text-blue-400"
         >
-          {language === 'uk' ? 'PL' : 'UA'}
+          {language === 'uk' ? '🇵🇱' : '🇺🇦'}
         </button>
 
         <h1 className="text-3xl font-bold text-center">

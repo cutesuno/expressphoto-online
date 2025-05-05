@@ -11,7 +11,7 @@ export default function RulesPage() {
         onClick={toggleLang}
         className="mb-6 px-4 py-2 bg-white text-black rounded hover:bg-gray-200"
       >
-        {lang === 'uk' ? 'Polski' : 'Українська'}
+        {lang === 'uk' ? 'Polski🇵🇱' : 'Українська🇺🇦'}
       </button>
 
       {lang === 'uk' ? (
