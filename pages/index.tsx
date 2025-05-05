@@ -102,7 +102,7 @@ export default function Home() {
       </p>    
 
       {/* Політика конфіденційності */}
-<Link href="/privacy-policy" className="text-sm underline block text-center mt-4">
+<Link href="/privacy-policy" className="text-sm underline block text-blue-400 hover:text-blue-300 text-center mt-4">
   {language === 'uk' ? 'Політика конфіденційності' : 'Polityka prywatności'}
 </Link>
 
