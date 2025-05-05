@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function RulesPage() {
   const [lang, setLang] = useState<'uk' | 'pl'>('uk');
@@ -55,6 +56,11 @@ export default function RulesPage() {
           <p>Twoje dane osobowe są wykorzystywane wyłącznie do realizacji zamówienia i nie są udostępniane osobom trzecim.</p>
         </>
       )}
-    </div>
+
+        <Link href="/" className="text-blue-400 underline">
+          {language === 'uk' ? 'Назад на головну' : 'Powróć do strony głównej'}
+        </Link>
+      </div>
+    </motion.div>
   );
 }
