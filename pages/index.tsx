@@ -65,12 +65,6 @@ export default function Home() {
           {t('prices')}
         </button>
       </div>
-      // Це код для футера, наприклад:
-<div className="footer">
-  <Link href="/regulamin">
-    {language === 'uk' ? 'Правила магазину' : 'Regulamin sklepu'}
-  </Link>
-</div>
 
       {showInfo && (
         <CompanyInfoModal language={language} onClose={() => setShowInfo(false)} />
@@ -108,7 +102,7 @@ export default function Home() {
       </p>    
 
      {/* Політика конфіденційності */}
-<Link href="/privacy-policy" className="text-sm underline block text-blue-400 hover:text-blue-300 text-center mt-4">
+<Link href="/privacy-policy" className="text-sm underline block ext-blue-400 hover:text-blue-300 text-center mt-4">
   {language === 'uk' 
     ? 'Політика конфіденційності' 
     : 'Polityka prywatności'}
