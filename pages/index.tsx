@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import PriceModal from '../components/PriceModal';
 import OrderForm from '../components/OrderForm';
 import CompanyInfoModal from '../components/CompanyInfoModal';
+import Link from 'next/link';
 
 export default function Home() {
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
@@ -98,10 +99,12 @@ export default function Home() {
         {language === 'uk'
           ? 'Графік роботи: Пн–Пт 9:00–17:00, Сб 10:00–13:00, Нд – вихідний'
           : 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne'}
-      </p>      
+      </p>    
+
       <Link href="/rules" className="text-sm underline">
-  {language === 'uk' ? 'Правила магазину' : 'Regulamin sklepu'}
-</Link>
+      {language === 'uk' ? 'Правила магазину' : 'Regulamin sklepu'}
+      </Link>
+
     <a
         href="mailto:dariiaexpressphoto@gmail.com"
         className="fixed bottom-6 right-6 bg-white text-black font-semibold px-4 py-2 rounded-full shadow-lg border border-gray-300 hover:bg-gray-100 transition-all z-50 flex items-center gap-2 text-sm sm:text-base"
