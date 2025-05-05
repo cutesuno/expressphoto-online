@@ -64,7 +64,7 @@ export default function Home() {
         <button onClick={() => setShowPrices(true)} className="text-sm underline">
           {t('prices')}
         </button>
-      </div>z
+      </div>
 
       {showInfo && (
         <CompanyInfoModal language={language} onClose={() => setShowInfo(false)} />
