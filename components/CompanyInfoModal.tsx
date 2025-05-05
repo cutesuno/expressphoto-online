@@ -42,6 +42,16 @@ export default function CompanyInfoModal({
         <p>{t('Пошта: dariiaexpressphoto@gmail.com', 'Email: dariiaexpressphoto@gmail.com')}</p>
         <p>{t('Адреса: Poland, Łódź, Łagiewnicka 118B', 'Adres: Polska, Łódź, Łagiewnicka 118B')}</p>
         <p>{t('Графік роботи: Пн–Пт 9:00–17:00, Сб 10:00–13:00, Нд – вихідний', 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne')}</p>
+        <p className="text-sm mt-4">
+  <a
+    href="/privacy-policy"
+    className="underline text-blue-600 hover:text-blue-400"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    {language === 'uk' ? 'Політика конфіденційності' : 'Polityka prywatności'}
+  </a>
+</p>
       </div>
     </motion.div>
   );
