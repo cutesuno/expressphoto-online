@@ -111,9 +111,15 @@ export default function Home() {
           : 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne'}
       </p>    
 
-      <Link href="/rules" className="text-sm underline">
-      {language === 'uk' ? 'Правила магазину' : 'Regulamin sklepu'}
-      </Link>
+      {/* Політика конфіденційності */}
+<Link href="/privacy-policy" className="text-sm underline block text-center mt-4">
+  {language === 'uk' ? 'Політика конфіденційності' : 'Polityka prywatności'}
+</Link>
+
+{/* Правила магазину */}
+<Link href="/rules" className="text-sm underline block text-center mt-2">
+  {language === 'uk' ? 'Правила магазину' : 'Regulamin sklepu'}
+</Link>
 
     <a
         href="mailto:dariiaexpressphoto@gmail.com"
