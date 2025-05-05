@@ -22,8 +22,9 @@ export default function RulesPage() {
           <p><strong>NIP:</strong> [7262708270]</p>
           <p><strong>REGON:</strong> [529959121]</p>
 
-          <h2 className="text-xl font-bold mt-6 mb-2">Політика повернення</h2>
-          <p>Ви маєте право відмовитись від замовлення без пояснення причин протягом 14 днів з моменту отримання.</p>
+          <h2 className="text-xl font-bold mt-6 mb-2">Політика процедури повернення</h2>
+          <p>У разі потреби повернення товару, будь ласка, зверніться до нас за електронною поштою.
+          Ви маєте право відмовитись від замовлення протягом 14 днів після отримання товару без пояснення причин, якщо він не був використаний і знаходиться у товарному вигляді.</p>
 
           <h2 className="text-xl font-bold mt-6 mb-2">Процедура скарг</h2>
           <p>Скарги надсилаються на емейл dariiaexpressphoto@gmail.com. Ми відповідаємо протягом 7 робочих днів.</p>
@@ -43,7 +44,8 @@ export default function RulesPage() {
           <p><strong>REGON:</strong> [529959121]</p>
 
           <h2 className="text-xl font-bold mt-6 mb-2">Polityka zwrotów</h2>
-          <p>Masz prawo odstąpić od zamówienia bez podania przyczyny w ciągu 14 dni od jego otrzymania.</p>
+          <p>Jeśli chcesz zwrócić towar, skontaktuj się z nami drogą mailową. 
+          Masz prawo aodstąpić od zamówienia w terminie 14 dni od otrzymania towaru bez podania przyczyny, pod warunkiem, że towar nie był używany i nadaje się do odsprzedaży.</p>
 
           <h2 className="text-xl font-bold mt-6 mb-2">Procedura reklamacji</h2>
           <p>Reklamacje prosimy przesyłać na adres e-mail: dariiaexpressphoto@gmail.com. Odpowiadamy w ciągu 7 dni roboczych.</p>
