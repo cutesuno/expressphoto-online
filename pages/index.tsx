@@ -59,11 +59,13 @@ export default function Home() {
         <button onClick={() => setShowInfo(true)} className="text-sm underline">
           {t('company')}
         </button>
+        
 
         <button onClick={() => setShowPrices(true)} className="text-sm underline">
           {t('prices')}
         </button>
       </div>
+      
 
       {showInfo && (
         <CompanyInfoModal language={language} onClose={() => setShowInfo(false)} />
@@ -99,6 +101,10 @@ export default function Home() {
           ? 'Графік роботи: Пн–Пт 9:00–17:00, Сб 10:00–13:00, Нд – вихідний'
           : 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne'}
       </p>
+      
+      <Link href="/rules" className="text-sm underline">
+  {language === 'uk' ? 'Правила магазину' : 'Regulamin sklepu'}
+</Link>
 
       <a
         href="mailto:dariiaexpressphoto@gmail.com"
