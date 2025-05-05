@@ -101,13 +101,15 @@ export default function Home() {
           : 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne'}
       </p>    
 
-      {/* Політика конфіденційності */}
+     {/* Політика конфіденційності */}
 <Link href="/privacy-policy" className="text-sm underline block text-blue-400 hover:text-blue-300 text-center mt-4">
-  {language === 'uk' ? 'Політика конфіденційності' : 'Polityka prywatności'}
+  {language === 'uk' 
+    ? 'Політика конфіденційності' 
+    : 'Polityka prywatności'}
 </Link>
 
 {/* Правила магазину */}
-<Link href="/rules" className="text-sm underline block text-center mt-2">
+<Link href="/rules" className="text-sm underline block text-blue-400 hover:text-blue-300 text-center mt-2">
   {language === 'uk' ? 'Правила магазину' : 'Regulamin sklepu'}
 </Link>
 
