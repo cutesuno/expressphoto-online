@@ -51,6 +51,18 @@ export default function CompanyInfoModal({
   >
     {language === 'uk' ? 'Політика конфіденційності' : 'Polityka prywatności'}
   </a>
+
+  <h3 className="font-semibold mt-4">
+  {language === 'uk' ? 'Юридична інформація' : 'Informacje prawne'}
+</h3>
+<p>
+  {language === 'uk'
+    ? 'Повна назва: EXPRESS PHOTO DARIIA KTAVETS'
+    : 'Pełna nazwa: EXPRESS PHOTO DARIIA KRAVETS'}
+</p>
+<p>NIP: 7262708270</p>
+<p>REGON: 529959121</p>
+
 </p>
       </div>
     </motion.div>

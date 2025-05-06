@@ -87,6 +87,16 @@ export default function PrivacyPolicy() {
           }
         </p>
 
+        <h2 className="text-xl font-semibold">
+  {language === 'uk' ? '6. Обробка платежів через Przelewy24' : '6. Przetwarzanie płatności przez Przelewy24'}
+</h2>
+<p>
+  {language === 'uk'
+    ? 'Ми використовуємо платіжний сервіс Przelewy24 для обробки онлайн-платежів. Дані, які ви надаєте під час оплати, можуть передаватися цьому сервісу відповідно до його політики конфіденційності.'
+    : 'Korzystamy z usługi płatniczej Przelewy24 do obsługi płatności online. Dane podane podczas płatności mogą być przekazywane tej usłudze zgodnie z jej polityką prywatności.'
+  }
+</p>
+
         <p className="text-sm text-gray-400">
           Останнє оновлення: 4 травня 2025 р.
         </p>
