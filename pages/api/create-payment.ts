@@ -16,7 +16,7 @@ export const config = {
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
-cconst handler = nextConnect({
+const handler = nextConnect({
   onError(err: any, req: any, res: any) {
     ...
   },
