@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
+export default function OrderForm({
+  language,
+  onSuccess,
+}: {
+  language: 'uk' | 'pl';
+  onSuccess?: () => void;
+}) {
   const router = useRouter();
   const [form, setForm] = useState({
     name: '',
@@ -117,6 +123,7 @@ export default function OrderForm({ language }: { language: 'uk' | 'pl' }) {
             ? 'Не вдалося створити оплату. Спробуйте пізніше.'
             : 'Nie udało się utworzyć płatności. Spróbuj ponownie.'
         );
+        if (onSuccess) onSuccess(); // ← ось тут
       }
       
     }
