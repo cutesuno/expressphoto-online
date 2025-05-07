@@ -4,12 +4,34 @@ import PriceModal from '../components/PriceModal';
 import OrderForm from '../components/OrderForm';
 import CompanyInfoModal from '../components/CompanyInfoModal';
 import Link from 'next/link';
+import OrderConfirmation from '../components/ OrderConfirmation';
 
 export default function Home() {
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
   const [showInfo, setShowInfo] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const handleFakeSubmit = () => {
+    // Тут буде логіка відправки форми або просто фейковий тригер
+    setShowConfirm(true);
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-950">
+      <h1 className="text-3xl font-bold mb-6 text-zinc-800 dark:text-zinc-100">Форма замовлення</h1>
+
+      <button
+        onClick={handleFakeSubmit}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition"
+      >
+        Відправити замовлення
+      </button>
+
+      {showConfirm && <OrderConfirmation onClose={() => setShowConfirm(false)} />}
+    </div>
+  );
+}
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1500);
