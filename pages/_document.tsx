@@ -8,9 +8,6 @@ export default function Document() {
         <link rel="icon" href="/favicon.ico" />
 
         {/* Meta */}
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Онлайн-друк, фото на документи, ксерокопії та більше — ExpressPhoto Online" />
         <meta name="theme-color" content="#000000" />
 
         {/* Основні теги SEO */}
@@ -25,8 +22,11 @@ export default function Document() {
         <meta property="og:description" content="Онлайн-друк, фото на документи, ксерокопії та більше – Łódź" />
         <meta property="og:url" content="https://www.expressphoto.online" />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://www.expressphoto.online/og-image.jpg" />
-        
+        <meta property="og:image" content="https://www.expressphoto.online/logo.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="ExpressPhoto Online" />
+
       </Head>
       <body className="bg-black text-white">
         <Main />
