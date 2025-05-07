@@ -4,7 +4,7 @@ import PriceModal from '../components/PriceModal';
 import OrderForm from '../components/OrderForm';
 import CompanyInfoModal from '../components/CompanyInfoModal';
 import Link from 'next/link';
-import ConfirmModal from '../components/ConfirmModal';
+import ModalConfirm from '../components/ModalConfirm';
 
 export default function Home() {
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
@@ -95,7 +95,7 @@ export default function Home() {
         Відправити замовлення
       </button>
 
-      {showConfirm && <ConfirmModal onClose={() => setShowConfirm(false)} />}
+      {showConfirm && <ModalConfirm onClose={() => setShowConfirm(false)} />}
 
       <p className="text-sm text-gray-500 mt-10 text-center">
         {t('address')}<br />
