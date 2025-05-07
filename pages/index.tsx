@@ -88,13 +88,6 @@ export default function Home() {
 
       <OrderForm language={language} />
 
-      <button
-        onClick={handleFakeSubmit}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition mt-6"
-      >
-        Відправити замовлення
-      </button>
-
       {showConfirm && <ModalConfirm onClose={() => setShowConfirm(false)} />}
 
       <p className="text-sm text-gray-500 mt-10 text-center">
