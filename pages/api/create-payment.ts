@@ -56,6 +56,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       redirectUrl: `https://expressphoto.vercel.app/order-success?lang=${language || 'uk'}&sessionId=${sessionId}`,
     });
   });
-} 
+}
 
 // Потребує: npm i formidable
