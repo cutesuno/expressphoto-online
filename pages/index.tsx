@@ -5,6 +5,7 @@ import OrderForm from '../components/OrderForm';
 import CompanyInfoModal from '../components/CompanyInfoModal';
 import Link from 'next/link';
 import OrderConfirmation from '../components/OrderConfirmation';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function Home() {
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
@@ -94,6 +95,8 @@ export default function Home() {
       >
         Відправити замовлення
       </button>
+      
+      {showConfirm && <ConfirmModal onClose={() => setShowConfirm(false)} />}
 
       {showConfirm && <OrderConfirmation onClose={() => setShowConfirm(false)} />}
 
