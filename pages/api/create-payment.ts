@@ -1,67 +1,61 @@
-// pages/api/create-payment.ts
+// ✅ /pages/api/create-payment.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import formidable from 'formidable';
+import fs from 'fs';
+import path from 'path';
 
-const P24_API_URL = 'https://secure.przelewy24.pl/api/v1/transaction/register';
+export const config = {
+  api: {
+    bodyParser: false, // важливо для form-data
+  },
+};
+
+const TEMP_DIR = path.join(process.cwd(), 'tmp');
+const ORDERS_PATH = path.join(TEMP_DIR, 'orders.json');
+
+// Ensure tmp dir and orders file exist
+if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
+if (!fs.existsSync(ORDERS_PATH)) fs.writeFileSync(ORDERS_PATH, JSON.stringify({}));
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const {
-    name,
-    email,
-    details,
-    time,
-    service,
-    quantity,
-    total,
-  } = req.body;
+  const form = formidable({ multiples: false, uploadDir: TEMP_DIR, keepExtensions: true });
 
-  if (!name || !email || !service || !quantity || !total) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
+  form.parse(req, async (err, fields, files) => {
+    if (err) return res.status(500).json({ error: 'File parsing error' });
 
-  try {
-    const sessionId = `order-${Date.now()}`;
-    const amountInCents = Math.round(Number(total) * 100);
+    const { name, email, details, time, service, quantity, total, language } = fields;
+    const file = files.file as formidable.File;
 
-    const payload = {
-      merchantId: process.env.P24_MERCHANT_ID,
-      posId: process.env.P24_POS_ID,
-      sessionId,
-      amount: amountInCents,
-      currency: 'PLN',
-      description: `Оплата за послугу: ${service}`,
-      email,
-      country: 'PL',
-      language: 'pl',
-      urlReturn: process.env.P24_RETURN_URL,
-      urlStatus: process.env.P24_STATUS_URL,
-      encoding: 'UTF-8',
-    };
-
-    const response = await fetch(P24_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.P24_ACCESS_TOKEN}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const result = await response.json();
-
-    if (response.ok && result && result.data && result.data.token) {
-      return res.status(200).json({
-        redirectUrl: `https://secure.przelewy24.pl/trnRequest/${result.data.token}`,
-        sessionId,
-      });
-    } else {
-      return res.status(400).json({ error: 'Payment init failed', details: result });
+    if (!name || !email || !service || !quantity || !total || !file) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
-  } catch (error) {
-    console.error('Payment error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
+
+    const sessionId = `order-${Date.now()}`;
+
+    // Save order to JSON
+    const orders = JSON.parse(fs.readFileSync(ORDERS_PATH, 'utf-8'));
+    orders[sessionId] = {
+      name,
+      email,
+      details,
+      time,
+      service,
+      quantity,
+      total,
+      language,
+      filePath: file.filepath,
+      originalFilename: file.originalFilename,
+    };
+    fs.writeFileSync(ORDERS_PATH, JSON.stringify(orders, null, 2));
+
+    // Return mock redirect URL (Przelewy24 додамо після верифікації)
+    return res.status(200).json({
+      sessionId,
+      redirectUrl: `https://expressphoto.vercel.app/order-success?lang=${language || 'uk'}`,
+    });
+  });
+} 
+
+// Потребує: npm i formidable

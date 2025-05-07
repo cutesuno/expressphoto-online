@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import PriceModal from '../components/PriceModal';
-import OrderForm from '../components/OrderForm';
 import CompanyInfoModal from '../components/CompanyInfoModal';
 import Link from 'next/link';
 import ModalConfirm from '../components/ModalConfirm';
+import OrderFormWithFile from '../components/OrderFormWithFile';
 
 export default function Home() {
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
@@ -86,7 +86,10 @@ export default function Home() {
         {t('intro')}
       </motion.p>
 
-      <OrderForm language={language} />
+      <OrderFormWithFile
+       language={language}
+       onSuccess={() => setShowConfirm(true)}
+      />
 
       {showConfirm && <ModalConfirm onClose={() => setShowConfirm(false)} />}
 
