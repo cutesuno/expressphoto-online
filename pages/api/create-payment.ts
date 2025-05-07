@@ -1,5 +1,5 @@
 // ✅ Fully working Vercel-compatible upload handler
-import nc from 'next-connect';
+import nextConnect from 'next-connect';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
@@ -16,7 +16,7 @@ export const config = {
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
-const handler = nc<NextApiRequest, NextApiResponse>({
+const handler = nextConnect<NextApiRequest, NextApiResponse>({
   onError(err, req, res) {
     console.error(err);
     res.status(500).end('Something went wrong.');
