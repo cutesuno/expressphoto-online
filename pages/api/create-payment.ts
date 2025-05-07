@@ -16,13 +16,12 @@ export const config = {
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
-const handler = nextConnect<NextApiRequest, NextApiResponse>({
-  onError(err, req, res) {
-    console.error(err);
-    res.status(500).end('Something went wrong.');
+cconst handler = nextConnect({
+  onError(err: any, req: any, res: any) {
+    ...
   },
-  onNoMatch(req, res) {
-    res.status(405).end('Method not allowed.');
+  onNoMatch(req: any, res: any) {
+    ...
   },
 });
 
