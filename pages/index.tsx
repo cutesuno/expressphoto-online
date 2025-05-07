@@ -12,26 +12,6 @@ export default function Home() {
   const [showPrices, setShowPrices] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
-  const handleFakeSubmit = () => {
-    // Тут буде логіка відправки форми або просто фейковий тригер
-    setShowConfirm(true);
-  };
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-950">
-      <h1 className="text-3xl font-bold mb-6 text-zinc-800 dark:text-zinc-100">Форма замовлення</h1>
-
-      <button
-        onClick={handleFakeSubmit}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition"
-      >
-        Відправити замовлення
-      </button>
-
-      {showConfirm && <OrderConfirmation onClose={() => setShowConfirm(false)} />}
-    </div>
-  );
-}
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1500);
@@ -39,6 +19,10 @@ export default function Home() {
   }, []);
 
   const toggleLang = () => setLanguage(language === 'uk' ? 'pl' : 'uk');
+
+  const handleFakeSubmit = () => {
+    setShowConfirm(true);
+  };
 
   const t = (key: string) => {
     const dict: any = {
@@ -59,20 +43,16 @@ export default function Home() {
     return dict[key]?.[language] || key;
   };
 
-  if (isLoading) {
-    return (
-      <motion.div
-        className="min-h-screen flex items-center justify-center bg-black text-white text-3xl font-bold"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 0 }}
-        transition={{ duration: 1 }}
-      >
-        Welcome to EXPRESS PHOTO ONLINE
-      </motion.div>
-    );
-  }
-
-  return (
+  return isLoading ? (
+    <motion.div
+      className="min-h-screen flex items-center justify-center bg-black text-white text-3xl font-bold"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 0 }}
+      transition={{ duration: 1 }}
+    >
+      Welcome to EXPRESS PHOTO ONLINE
+    </motion.div>
+  ) : (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative">
       <button onClick={toggleLang} className="absolute top-4 right-4 text-2xl">
         {language === 'uk' ? '🇵🇱' : '🇺🇦'}
@@ -82,19 +62,13 @@ export default function Home() {
         <button onClick={() => setShowInfo(true)} className="text-sm underline">
           {t('company')}
         </button>
-
         <button onClick={() => setShowPrices(true)} className="text-sm underline">
           {t('prices')}
         </button>
       </div>
 
-      {showInfo && (
-        <CompanyInfoModal language={language} onClose={() => setShowInfo(false)} />
-      )}
-
-      {showPrices && (
-        <PriceModal language={language} onClose={() => setShowPrices(false)} />
-      )}
+      {showInfo && <CompanyInfoModal language={language} onClose={() => setShowInfo(false)} />}
+      {showPrices && <PriceModal language={language} onClose={() => setShowPrices(false)} />}
 
       <motion.h1
         className="text-4xl font-bold mb-2 text-center"
@@ -114,6 +88,15 @@ export default function Home() {
 
       <OrderForm language={language} />
 
+      <button
+        onClick={handleFakeSubmit}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition mt-6"
+      >
+        Відправити замовлення
+      </button>
+
+      {showConfirm && <OrderConfirmation onClose={() => setShowConfirm(false)} />}
+
       <p className="text-sm text-gray-500 mt-10 text-center">
         {t('address')}<br />
         {t('phone')}<br />
@@ -121,25 +104,21 @@ export default function Home() {
         {language === 'uk'
           ? 'Графік роботи: Пн–Пт 9:00–17:00, Сб 10:00–13:00, Нд – вихідний'
           : 'Godziny pracy: Pon–Pt 9:00–17:00, Sob 10:00–13:00, Niedz – nieczynne'}
-      </p>    
+      </p>
 
-     {/* Політика конфіденційності */}
-<Link href="/privacy-policy" className="text-sm underline block text-blue-400 hover:text-blue-300 text-center mt-4">
-  {language === 'uk' 
-    ? 'Політика конфіденційності' 
-    : 'Polityka prywatności'}
-</Link>
+      <Link href="/privacy-policy" className="text-sm underline block text-blue-400 hover:text-blue-300 text-center mt-4">
+        {language === 'uk' ? 'Політика конфіденційності' : 'Polityka prywatności'}
+      </Link>
 
-{/* Правила магазину */}
-<Link href="/rules" className="text-sm underline block text-blue-400 hover:text-blue-300 text-center mt-2">
-  {language === 'uk' ? 'Правила магазину' : 'Regulamin sklepu'}
-</Link>
+      <Link href="/rules" className="text-sm underline block text-blue-400 hover:text-blue-300 text-center mt-2">
+        {language === 'uk' ? 'Правила магазину' : 'Regulamin sklepu'}
+      </Link>
 
-    <a
+      <a
         href="mailto:dariiaexpressphoto@gmail.com"
         className="fixed bottom-6 right-6 bg-white text-black font-semibold px-4 py-2 rounded-full shadow-lg border border-gray-300 hover:bg-gray-100 transition-all z-50 flex items-center gap-2 text-sm sm:text-base"
       >
-        <span role="img" aria-label="mail">✉️</span> {t('contactUs')}
+        ✉️ {t('contactUs')}
       </a>
     </div>
   );
