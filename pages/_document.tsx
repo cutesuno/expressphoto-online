@@ -5,7 +5,7 @@ export default function Document() {
     <Html lang="uk">
       <Head>
         {/* Google Search Console verification */}
-        <meta name="google-site-verification" content="googledab55229a60cc1b3" />
+        <meta name="google-site-verification" content="N6zS289Eaqxxv5_n_dN6EUYYlihhJwmc7OcgQcptswc" />
         
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
