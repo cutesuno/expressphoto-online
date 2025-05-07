@@ -4,7 +4,6 @@ import PriceModal from '../components/PriceModal';
 import OrderForm from '../components/OrderForm';
 import CompanyInfoModal from '../components/CompanyInfoModal';
 import Link from 'next/link';
-import OrderConfirmation from '../components/OrderConfirmation';
 import ConfirmModal from '../components/ConfirmModal';
 
 export default function Home() {
@@ -95,10 +94,8 @@ export default function Home() {
       >
         Відправити замовлення
       </button>
-      
-      {showConfirm && <ConfirmModal onClose={() => setShowConfirm(false)} />}
 
-      {showConfirm && <OrderConfirmation onClose={() => setShowConfirm(false)} />}
+      {showConfirm && <ConfirmModal onClose={() => setShowConfirm(false)} />}
 
       <p className="text-sm text-gray-500 mt-10 text-center">
         {t('address')}<br />
