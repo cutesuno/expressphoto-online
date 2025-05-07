@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Return mock redirect URL (Przelewy24 додамо після верифікації)
     return res.status(200).json({
       sessionId,
-      redirectUrl: `https://expressphoto.vercel.app/order-success?lang=${language || 'uk'}`,
+      redirectUrl: `https://expressphoto.vercel.app/order-success?lang=${language || 'uk'}&sessionId=${sessionId}`,
     });
   });
 } 
