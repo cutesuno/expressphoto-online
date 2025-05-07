@@ -56,6 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       originalFilename: file.originalFilename,
     };
     fs.writeFileSync(ORDERS_PATH, JSON.stringify(orders, null, 2));
+    
 
     // 🔔 Надіслати в Telegram
     const caption = `🧾 Нове замовлення #${sessionId}\n👤 ${name}\n📧 ${email}\n🕒 ${time}\n🧾 ${service} x${quantity} = ${total} zł\n📄 ${details}`;
