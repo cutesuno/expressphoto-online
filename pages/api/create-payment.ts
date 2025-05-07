@@ -1,5 +1,5 @@
 // ✅ Fully working Vercel-compatible upload handler
-const nextConnect = require('next-connect');
+import nextConnect from 'next-connect';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
@@ -16,12 +16,13 @@ export const config = {
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
-const handler = nextConnect({
-  onError(err: any, req: any, res: any) {
-    ...
+const handler = nextConnect<NextApiRequest, NextApiResponse>({
+  onError(err, req, res) {
+    console.error('Error in handler:', err);
+    res.status(500).end('Server error');
   },
-  onNoMatch(req: any, res: any) {
-    ...
+  onNoMatch(req, res) {
+    res.status(405).end('Method Not Allowed');
   },
 });
 
@@ -44,7 +45,12 @@ handler.post((req, res) => {
     const sessionId = `order-${Date.now()}`;
 
     // ✅ Telegram
-    const caption = `🧾 Нове замовлення #${sessionId}\n👤 ${name}\n📧 ${email}\n🕒 ${time}\n🧾 ${service} x${quantity} = ${total} zł\n📄 ${details}`;
+    const caption = `🧾 Нове замовлення #${sessionId}
+👤 ${name}
+📧 ${email}
+🕒 ${time}
+🧾 ${service} x${quantity} = ${total} zł
+📄 ${details}`;
 
     const tgForm = new FormData();
     tgForm.append('chat_id', process.env.TELEGRAM_CHAT_ID!);
