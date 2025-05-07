@@ -1,6 +1,6 @@
 // ✅ Fully working Vercel-compatible upload handler
-import nextConnect from 'next-connect';
 import type { NextApiRequest, NextApiResponse } from 'next';
+const nextConnect = require('next-connect');
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
@@ -8,30 +8,20 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 
 export const config = {
-  api: {
-    bodyParser: false,
-  },
+  api: { bodyParser: false },
 };
 
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
-const handler = nextConnect<NextApiRequest, NextApiResponse>({
-  onError(err, req, res) {
-    console.error('Error in handler:', err);
-    res.status(500).end('Server error');
-  },
-  onNoMatch(req, res) {
-    res.status(405).end('Method Not Allowed');
-  },
-});
+const handler = nextConnect();
 
-handler.post((req, res) => {
+handler.post((req: NextApiRequest, res: NextApiResponse) => {
   const form = formidable({ uploadDir: TEMP_DIR, keepExtensions: true });
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      console.error('Parse error:', err);
+      console.error('❌ Parse error:', err);
       return res.status(500).json({ error: 'Parsing failed' });
     }
 
@@ -43,8 +33,6 @@ handler.post((req, res) => {
     }
 
     const sessionId = `order-${Date.now()}`;
-
-    // ✅ Telegram
     const caption = `🧾 Нове замовлення #${sessionId}
 👤 ${name}
 📧 ${email}
@@ -57,15 +45,20 @@ handler.post((req, res) => {
     tgForm.append('caption', caption);
     tgForm.append('document', fs.createReadStream(file.filepath), file.originalFilename || 'file');
 
-    await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN!}/sendDocument`, {
-      method: 'POST',
-      body: tgForm as any,
-    });
+    try {
+      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN!}/sendDocument`, {
+        method: 'POST',
+        body: tgForm as any,
+      });
 
-    return res.status(200).json({
-      sessionId,
-      redirectUrl: `https://expressphoto.vercel.app/order-success?lang=${language || 'uk'}&sessionId=${sessionId}`,
-    });
+      return res.status(200).json({
+        sessionId,
+        redirectUrl: `https://expressphoto.vercel.app/order-success?lang=${language || 'uk'}&sessionId=${sessionId}`,
+      });
+    } catch (err) {
+      console.error('❌ Telegram error:', err);
+      return res.status(500).json({ error: 'Telegram failed' });
+    }
   });
 });
 
