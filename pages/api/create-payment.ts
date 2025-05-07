@@ -1,5 +1,5 @@
 // ✅ Fully working Vercel-compatible upload handler
-import nextConnect from 'next-connect';
+const nextConnect = require('next-connect');
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
