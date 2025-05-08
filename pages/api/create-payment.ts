@@ -1,6 +1,6 @@
-// ✅ Fully working Vercel-compatible upload handler
+// pages/api/create-payment.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-const nextConnect = require('next-connect'); 
+const nextConnect = require('next-connect');
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
@@ -8,7 +8,9 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 
 export const config = {
-  api: { bodyParser: false },
+  api: { bodyParser: false,
+    externalResolver: true, // ⬅️ це потрібно
+  },
 };
 
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
