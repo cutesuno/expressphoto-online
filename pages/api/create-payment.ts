@@ -1,3 +1,4 @@
+console.log('METHOD:', req.method)
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { File } from 'formidable';
 import fs from 'fs';
