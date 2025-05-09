@@ -1,4 +1,4 @@
-console.log('METHOD:', req.method)
+// pages/api/create-payment.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { File } from 'formidable';
 import fs from 'fs';
@@ -7,7 +7,9 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 
 export const config = {
-  api: { bodyParser: false },
+  api: {
+    bodyParser: false,
+  },
 };
 
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
@@ -22,32 +24,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      console.error('❌ Form parse error:', err);
-      return res.status(500).json({ error: 'Form parsing failed' });
+      console.error('Form parse error:', err);
+      return res.status(500).json({ error: 'Failed to parse form' });
     }
 
     const { name, email, details, time, service, quantity, total, language } = fields;
-    const uploadedFile = files.file as File;
+    const file = files.file as File;
 
-    if (!name || !email || !service || !quantity || !total || !uploadedFile) {
+    if (!name || !email || !service || !quantity || !total || !file) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const sessionId = `order-${Date.now()}`;
-    const caption = `🧾 Нове замовлення #${sessionId}
-👤 ${name}
-📧 ${email}
-🕒 ${time}
-🧾 ${service} x${quantity} = ${total} zł
-📄 ${details}`;
+    const caption = `🧾 Нове замовлення #${sessionId}\n👤 ${name}\n📧 ${email}\n🕒 ${time}\n🧾 ${service} x${quantity} = ${total} zł\n📄 ${details}`;
+
+    const tgForm = new FormData();
+    tgForm.append('chat_id', process.env.TELEGRAM_CHAT_ID!);
+    tgForm.append('caption', caption);
+    tgForm.append('document', fs.createReadStream(file.filepath), file.originalFilename || 'file');
 
     try {
-      const tgForm = new FormData();
-      tgForm.append('chat_id', process.env.TELEGRAM_CHAT_ID!);
-      tgForm.append('caption', caption);
-      tgForm.append('document', fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename || 'file.jpg');
-
-      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendDocument`, {
+      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN!}/sendDocument`, {
         method: 'POST',
         body: tgForm as any,
       });
@@ -56,9 +53,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         sessionId,
         redirectUrl: `https://expressphoto.vercel.app/order-success?lang=${language || 'uk'}&sessionId=${sessionId}`,
       });
-    } catch (error) {
-      console.error('❌ Telegram error:', error);
-      return res.status(500).json({ error: 'Telegram send failed' });
+    } catch (err) {
+      console.error('Telegram error:', err);
+      return res.status(500).json({ error: 'Failed to send to Telegram' });
     }
   });
 }
