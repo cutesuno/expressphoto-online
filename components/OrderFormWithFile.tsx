@@ -1,8 +1,11 @@
 // components/OrderFormWithFile.tsx
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
+import { loadStripe } from '@stripe/stripe-js';
 
-export default function OrderFormWithFile({ language, onSuccess }: { language: 'uk' | 'pl'; onSuccess?: () => void }) {
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
+export default function OrderFormWithFile({ language }: { language: 'uk' | 'pl' }) {
   const router = useRouter();
   const [form, setForm] = useState({ name: '', email: '', details: '', time: '' });
   const [file, setFile] = useState<File | null>(null);
@@ -31,37 +34,32 @@ export default function OrderFormWithFile({ language, onSuccess }: { language: '
     if (e.target.files) setFile(e.target.files[0]);
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!file || !selectedService || !form.name || !form.email) {
+  const handleStripeCheckout = async () => {
+    if (!selectedService || !form.name || !form.email) {
       alert(language === 'uk' ? 'Заповніть усі поля' : 'Wypełnij wszystkie pola');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('name', form.name);
-    formData.append('email', form.email);
-    formData.append('details', form.details);
-    formData.append('time', form.time);
-    formData.append('service', selectedService.label);
-    formData.append('quantity', quantity.toString());
-    formData.append('total', totalPrice.toFixed(2));
-    formData.append('language', language);
-    formData.append('file', file);
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email,
+        service: selectedService.label,
+        quantity,
+        total: totalPrice,
+        language,
+      }),
+    });
 
-    const res = await fetch('/api/create-payment', { method: 'POST', body: formData });
     const data = await res.json();
-
-    if (data.redirectUrl) {
-      if (onSuccess) onSuccess();
-      setTimeout(() => (window.location.href = data.redirectUrl), 1500);
-    } else {
-      alert(language === 'uk' ? 'Помилка створення замовлення' : 'Błąd składania zamówienia');
-    }
+    const stripe = await stripePromise;
+    await stripe?.redirectToCheckout({ sessionId: data.id });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto space-y-4">
+    <form className="w-full max-w-md mx-auto space-y-4">
       <input name="name" placeholder={language === 'uk' ? "Ваше ім'я" : 'Imię'} value={form.name} onChange={handleChange} required className="w-full p-3 rounded bg-zinc-900 text-white" />
       <input name="email" placeholder={language === 'uk' ? 'Емейл або телефон' : 'Email lub telefon'} value={form.email} onChange={handleChange} required className="w-full p-3 rounded bg-zinc-900 text-white" />
       <textarea name="details" placeholder={language === 'uk' ? 'Деталі замовлення' : 'Szczegóły zamówienia'} value={form.details} onChange={handleChange} rows={3} className="w-full p-3 rounded bg-zinc-900 text-white" />
@@ -102,9 +100,13 @@ export default function OrderFormWithFile({ language, onSuccess }: { language: '
 
       <input type="file" onChange={handleFileChange} required className="block text-sm text-white" />
 
-      <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl transition">
-        {language === 'uk' ? 'Оформити замовлення' : 'Złóż zamówienie'}
+      <button
+        type="button"
+        onClick={handleStripeCheckout}
+        className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl transition"
+      >
+        {language === 'uk' ? 'Перейти до оплати' : 'Przejdź do płatności'}
       </button>
     </form>
   );
-}
+} 

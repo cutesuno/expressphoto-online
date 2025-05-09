@@ -1,0 +1,58 @@
+import { NextApiRequest, NextApiResponse } from 'next';
+import formidable from 'formidable';
+import fs from 'fs';
+import path from 'path';
+import Stripe from 'stripe';
+
+export const config = {
+  api: { bodyParser: false },
+};
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-10-16',
+});
+
+const TEMP_DIR = path.join(process.cwd(), 'tmp');
+if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const form = formidable({ uploadDir: TEMP_DIR, keepExtensions: true });
+
+  const { fields, files } = await new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) reject(err);
+      else resolve({ fields, files });
+    });
+  });
+
+  const { name, email, service, quantity, total, language } = fields;
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'pln',
+            product_data: {
+              name: service as string,
+              description: `Клієнт: ${name}, Email: ${email}`,
+            },
+            unit_amount: Math.round(parseFloat(total as string) * 100),
+          },
+          quantity: parseInt(quantity as string),
+        },
+      ],
+      mode: 'payment',
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order-success?lang=${language}&sessionId={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/?canceled=true`,
+    });
+
+    res.status(200).json({ url: session.url });
+  } catch (err) {
+    console.error('Stripe error:', err);
+    res.status(500).json({ error: 'Stripe session creation failed' });
+  }
+}

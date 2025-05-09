@@ -1,52 +1,52 @@
-import { useState, useEffect } from 'react';
+// pages/order-success.tsx
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import ModalConfirm from '../components/ModalConfirm';
+import Stripe from 'stripe';
 
 export default function OrderSuccess() {
-  const [show, setShow] = useState(true);
   const router = useRouter();
-
-  const language = (router.query.lang as 'uk' | 'pl') || 'uk';
-  const sessionId = router.query.sessionId as string;
+  const { sessionId, lang = 'uk' } = router.query;
+  const [session, setSession] = useState<Stripe.Checkout.Session | null>(null);
 
   const t = (key: string) => {
     const dict: any = {
-      thankYou: {
-        uk: 'Дякуємо за замовлення!',
-        pl: 'Dziękujemy za zamówienie!',
+      success: {
+        uk: 'Дякуємо за замовлення! Оплата пройшла успішно 💚',
+        pl: 'Dziękujemy za zamówienie! Płatność powiodła się 💚',
       },
-      backHome: {
+      back: {
         uk: 'Повернутися на головну',
         pl: 'Powrót na stronę główną',
       },
-      orderNumber: {
-        uk: 'Номер замовлення:',
-        pl: 'Numer zamówienia:',
-      },
     };
-    return dict[key]?.[language] || key;
+    return dict[key]?.[lang as string] || key;
   };
 
+  useEffect(() => {
+    if (!sessionId) return;
+
+    fetch(`/api/get-session?sessionId=${sessionId}`)
+      .then((res) => res.json())
+      .then((data) => setSession(data.session))
+      .catch(console.error);
+  }, [sessionId]);
+
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
-      {show ? (
-        <ModalConfirm onClose={() => setShow(false)} />
-      ) : (
-        <div className="text-center space-y-4">
-          <p className="text-xl">{t('thankYou')}</p>
-          {sessionId && (
-            <p className="text-sm text-gray-400">
-              {t('orderNumber')} <span className="font-mono">{sessionId}</span>
-            </p>
-          )}
-          <button
-            onClick={() => router.push(`/?lang=${language}`)}
-            className="bg-white text-black px-4 py-2 rounded hover:bg-gray-200 transition"
-          >
-            {t('backHome')}
-          </button>
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 text-center">
+      <h1 className="text-2xl font-bold mb-4">{t('success')}</h1>
+      {session && (
+        <p className="text-sm text-gray-400 mb-6">
+          🧾 ID: {session.id}<br />
+          💳 {session.payment_method_types?.[0]}<br />
+          📧 {session.customer_email}
+        </p>
       )}
+      <button
+        onClick={() => router.push(`/`)}
+        className="bg-white text-black px-4 py-2 rounded hover:bg-gray-200"
+      >
+        {t('back')}
+      </button>
     </div>
   );
 }
