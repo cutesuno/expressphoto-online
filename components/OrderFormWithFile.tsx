@@ -60,9 +60,7 @@ export default function OrderFormWithFile({
     });
 
     const data = await res.json();
-    const stripe = await stripePromise;
-    await stripe?.redirectToCheckout({ sessionId: data.id });
-  };
+    window.location.href = data.url;
 
   return (
     <form className="w-full max-w-md mx-auto space-y-4">
