@@ -1,4 +1,3 @@
-// pages/api/checkout-webhook.ts
 import { buffer } from 'micro';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
@@ -23,17 +22,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const buf = await buffer(req);
   const sig = req.headers['stripe-signature'];
 
-  // Логування підпису для дебагу
-  console.log('Stripe Signature:', sig);
-
   let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(buf, sig!, webhookSecret);
-
-    // Логування тіла події для дебагу
-    console.log('Received Stripe event:', event);
-
   } catch (err) {
     console.error('❌ Webhook signature verification failed:', err);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -49,8 +41,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 📧 Email: ${session?.customer_email || '—'}  
 💳 Метод: ${session?.payment_method_types?.[0] || '—'}  
 🧾 Послуга: ${session?.metadata?.service || '—'}  
-💰 Сума: ${(session.amount_total || 0) / 100} zł
-    `;
+💰 Сума: ${(session.amount_total || 0) / 100} zł  
+`;
 
     const form = new FormData();
     form.append('chat_id', TELEGRAM_CHAT_ID);
@@ -58,14 +50,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     form.append('parse_mode', 'Markdown');
 
     try {
-      // Логування даних, що відправляються в Telegram
-      console.log('Sending Telegram message:', message);
-
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         body: form as any,
       });
-      console.log('✅ Telegram notification sent');
+
+      const tgData = await tgRes.text(); // This line reads the response as text.
+      console.log('📲 Telegram response:', tgData);
     } catch (err) {
       console.error('❌ Telegram error:', err);
     }
