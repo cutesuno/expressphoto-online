@@ -55,6 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         method: 'POST',
         body: form as any,
       });
+      const tgData = await tgRes.text(); // ⬅️ додай оце перед логом
       console.log('📬 Telegram response:', tgData);
     } catch (err) {
       console.error('❌ Telegram error:', err);
