@@ -81,7 +81,7 @@ export default function OrderSuccess() {
         >
           💳 {t('method')} {session.payment_method_types?.[0]}<br />
           📧 {t('email')} {session.customer_email}<br />
-          🧾 {t('service')} {session.metadata?.service || '—'}
+          🧾 {t('service')} {session.metadata?.service || '—'} – {session.metadata?.quantity || '—'}x
         </motion.div>
       )}
 
