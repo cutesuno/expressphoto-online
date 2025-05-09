@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         method: 'POST',
         body: form as any,
       });
-      console.log('✅ Telegram notification sent');
+      console.log('📬 Telegram response:', tgData);
     } catch (err) {
       console.error('❌ Telegram error:', err);
     }
