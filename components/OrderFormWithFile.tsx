@@ -5,7 +5,13 @@ import { loadStripe } from '@stripe/stripe-js';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-export default function OrderFormWithFile({ language }: { language: 'uk' | 'pl' }) {
+export default function OrderFormWithFile({
+  language,
+  onSuccess, // додати сюди
+}: {
+  language: 'uk' | 'pl';
+  onSuccess?: () => void; // і сюди
+}) {
   const router = useRouter();
   const [form, setForm] = useState({ name: '', email: '', details: '', time: '' });
   const [file, setFile] = useState<File | null>(null);
