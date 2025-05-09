@@ -1,5 +1,4 @@
 // pages/api/create-checkout-session.ts
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
@@ -14,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { name, email, service, quantity, total, language } = req.body;
 
-  console.log('🔥 Checkout request:', { name, email, service, quantity, total, language });
+  console.log('🔥 Creating session for:', { name, email, service, quantity, total, language });
 
   if (!name || !email || !service || !quantity || !total) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -31,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               name: service,
               description: `Клієнт: ${name}, Email: ${email}`,
             },
-            unit_amount: Math.round(parseFloat(total) * 100), // 40.00 → 4000
+            unit_amount: Math.round(parseFloat(total) * 100),
           },
           quantity: parseInt(quantity),
         },
@@ -41,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/?canceled=true`,
     });
 
-    return res.status(200).json({ id: session.id }); // ✅ Повертаємо session.id
+    return res.status(200).json({ url: session.url });
   } catch (err) {
     console.error('❌ Stripe error:', err);
     return res.status(500).json({ error: 'Stripe session creation failed' });

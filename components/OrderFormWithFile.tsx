@@ -45,23 +45,41 @@ export default function OrderFormWithFile({
       alert(language === 'uk' ? 'Заповніть усі поля' : 'Wypełnij wszystkie pola');
       return;
     }
-
-    const res = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: form.name,
-        email: form.email,
-        service: selectedService.label,
-        quantity,
-        total: totalPrice,
-        language,
-      }),
-    });
-
-    const data = await res.json();
-    const stripe = await stripePromise;
-    window.location.href = data.url;
+  
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          service: selectedService.label,
+          quantity,
+          total: totalPrice,
+          language,
+        }),
+      });
+  
+      if (!res.ok) {
+        const text = await res.text();
+        console.error('❌ Server response:', text);
+        throw new Error('Stripe session creation failed');
+      }
+  
+      const data = await res.json();
+  
+      if (!data.url) {
+        console.error('❌ Invalid Stripe response:', data);
+        throw new Error('Missing session URL');
+      }
+  
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('❌ Checkout error:', error);
+      alert(language === 'uk'
+        ? 'Помилка під час переходу до Stripe. Спробуйте ще раз.'
+        : 'Błąd przy przekierowaniu do Stripe. Spróbuj ponownie.');
+    }
   };
 
   return (
