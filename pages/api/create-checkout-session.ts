@@ -1,33 +1,23 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import formidable from 'formidable';
-import fs from 'fs';
-import path from 'path';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
-export const config = {
-  api: { bodyParser: false },
-};
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
- apiVersion: '2025-04-30.basil',
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: '2025-04-30.basil',
 });
 
-const TEMP_DIR = path.join(process.cwd(), 'tmp');
-if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  const form = formidable({ uploadDir: TEMP_DIR, keepExtensions: true });
+  const { name, email, service, quantity, total, language } = req.body;
 
-  const { fields, files } = await new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) => {
-    form.parse(req, (err, fields, files) => {
-      if (err) reject(err);
-      else resolve({ fields, files });
-    });
-  });
+  // ✅ Додай логування для дебагу
+  console.log('🔥 Checkout request:', { name, email, service, quantity, total, language });
 
-  const { name, email, service, quantity, total, language } = fields;
+  if (!name || !email || !service || !quantity || !total) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -37,12 +27,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           price_data: {
             currency: 'pln',
             product_data: {
-              name: service as string,
+              name: service,
               description: `Клієнт: ${name}, Email: ${email}`,
             },
-            unit_amount: Math.round(parseFloat(total as string) * 100),
+            unit_amount: Math.round(parseFloat(total) * 100), // сума в ґрошах (наприклад, 40.00 => 4000)
           },
-          quantity: parseInt(quantity as string),
+          quantity: parseInt(quantity),
         },
       ],
       mode: 'payment',
@@ -50,9 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/?canceled=true`,
     });
 
-    res.status(200).json({ url: session.url });
+    return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error('Stripe error:', err);
-    res.status(500).json({ error: 'Stripe session creation failed' });
+    console.error('❌ Stripe error:', err);
+    return res.status(500).json({ error: 'Stripe session creation failed' });
   }
 }
