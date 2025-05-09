@@ -6,7 +6,7 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 
 export const config = {
-  api: { bodyParser: false },
+  api: { bodyParser: false }, // ⛔️ disable body parsing for raw Stripe signature verification
 };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -23,24 +23,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const buf = await buffer(req);
   const sig = req.headers['stripe-signature'];
 
+  // Логування підпису для дебагу
+  console.log('Stripe Signature:', sig);
+
   let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(buf, sig!, webhookSecret);
-  } catch (err: any) {
-    console.error('❌ Webhook signature verification failed:', err.message);
+
+    // Логування тіла події для дебагу
+    console.log('Received Stripe event:', event);
+
+  } catch (err) {
+    console.error('❌ Webhook signature verification failed:', err);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  // ✅ Handle successful checkout
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
 
     const message = `
 🧾 *Нове замовлення (тестовий Stripe)*  
-👤 Ім'я: ${session.metadata?.name || '—'}  
-💳 Метод: ${session.payment_method_types?.[0] || '—'}  
-🧾 Послуга: ${session.metadata?.service || '—'}  
-🔢 Кількість: ${session.metadata?.quantity || '—'}  
+👤 Ім'я: ${session?.customer_details?.name || '—'}  
+📧 Email: ${session?.customer_email || '—'}  
+💳 Метод: ${session?.payment_method_types?.[0] || '—'}  
+🧾 Послуга: ${session?.metadata?.service || '—'}  
 💰 Сума: ${(session.amount_total || 0) / 100} zł
     `;
 
@@ -50,17 +58,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     form.append('parse_mode', 'Markdown');
 
     try {
-      const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      // Логування даних, що відправляються в Telegram
+      console.log('Sending Telegram message:', message);
+
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         body: form as any,
       });
-
-      const tgData = await tgRes.text();
-      console.log('📬 Telegram response:', tgData);
+      console.log('✅ Telegram notification sent');
     } catch (err) {
       console.error('❌ Telegram error:', err);
     }
-}
-console.log('✅ Webhook received and Telegram sent');
-res.status(200).end(); // ✅ обов'язково
+  }
+
+  res.status(200).end('ok');
 }
