@@ -60,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (err) {
       console.error('❌ Telegram error:', err);
     }
-  }
-
-  res.status(200).end('ok');
+}
+console.log('✅ Webhook received and Telegram sent');
+res.status(200).end(); // ✅ обов'язково
 }
