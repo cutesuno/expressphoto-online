@@ -41,9 +41,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 👤 Ім'я: ${session?.customer_details?.name || '—'}  
 📧 Email: ${session?.customer_email || '—'}  
 💳 Метод: ${session?.payment_method_types?.[0] || '—'}  
-🧾 Послуга: ${session?.metadata?.service || '—'}  
+🧾 Послуга: ${session?.metadata?.service || '—'} — ${session?.metadata?.quantity || '?'}x  
 💰 Сума: ${(session.amount_total || 0) / 100} zł
-    `;
+`;
 
     const form = new FormData();
     form.append('chat_id', TELEGRAM_CHAT_ID);
