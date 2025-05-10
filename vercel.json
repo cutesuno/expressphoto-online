@@ -1,0 +1,12 @@
+{
+    "routes": [
+      {
+        "src": "/api/webhook",
+        "methods": ["POST"],
+        "headers": {
+          "cache-control": "no-store"
+        },
+        "continue": true
+      }
+    ]
+  }
