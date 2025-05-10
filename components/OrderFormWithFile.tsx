@@ -1,5 +1,5 @@
 // components/OrderFormWithFile.tsx
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -7,10 +7,10 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 
 export default function OrderFormWithFile({
   language,
-  onSuccess,
+  onSuccess, // додати сюди
 }: {
   language: 'uk' | 'pl';
-  onSuccess?: () => void;
+  onSuccess?: () => void; // і сюди
 }) {
   const router = useRouter();
   const [form, setForm] = useState({ name: '', email: '', details: '', time: '' });
@@ -41,38 +41,38 @@ export default function OrderFormWithFile({
   };
 
   const handleStripeCheckout = async () => {
-    if (!selectedService || !form.name || !form.email || !file) {
-      alert(language === 'uk' ? 'Заповніть усі поля та прикріпіть файл' : 'Wypełnij wszystkie pola i załącz plik');
+    if (!selectedService || !form.name || !form.email) {
+      alert(language === 'uk' ? 'Заповніть усі поля' : 'Wypełnij wszystkie pola');
       return;
     }
-
+  
     try {
-      const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('email', form.email);
-      formData.append('details', form.details);
-      formData.append('time', form.time);
-      formData.append('service', selectedService.label);
-      formData.append('quantity', quantity.toString());
-      formData.append('total', totalPrice.toFixed(2));
-      formData.append('language', language);
-      formData.append('file', file);
-
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          service: selectedService.label,
+          quantity,
+          total: totalPrice,
+          language,
+        }),
       });
-
+  
       if (!res.ok) {
         const text = await res.text();
         console.error('❌ Server response:', text);
         throw new Error('Stripe session creation failed');
       }
-
+  
       const data = await res.json();
-      if (!data.url) throw new Error('Missing session URL');
-
-      if (onSuccess) onSuccess();
+  
+      if (!data.url) {
+        console.error('❌ Invalid Stripe response:', data);
+        throw new Error('Missing session URL');
+      }
+  
       window.location.href = data.url;
     } catch (error) {
       console.error('❌ Checkout error:', error);
