@@ -1,10 +1,16 @@
 {
-    "routes": [
-      {
-        "src": "/api/create-checkout-session",
-        "methods": ["POST"],
-        "headers": { "cache-control": "no-store" },
-        "continue": true
-      }
-    ]
-  }
+  "routes": [
+    {
+      "src": "/api/create-checkout-session",
+      "methods": ["POST"],
+      "headers": { "cache-control": "no-store" },
+      "continue": true
+    },
+    {
+      "src": "/api/webhook",
+      "methods": ["POST"],
+      "headers": { "cache-control": "no-store" },
+      "continue": true
+    }
+  ]
+} 
