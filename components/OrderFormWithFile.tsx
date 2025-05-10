@@ -46,31 +46,40 @@ export default function OrderFormWithFile({
       return;
     }
   
-    const fileBase64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve((reader.result as string).split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file!);
-    });
+    try {
+      const formData = new FormData();
+      formData.append('name', form.name);
+      formData.append('email', form.email);
+      formData.append('details', form.details);
+      formData.append('time', form.time);
+      formData.append('service', selectedService.label);
+      formData.append('quantity', quantity.toString());
+      formData.append('total', totalPrice.toFixed(2));
+      formData.append('language', language);
+      formData.append('file', file);
   
-    const res = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: form.name,
-        email: form.email,
-        service: selectedService.label,
-        quantity,
-        total: totalPrice,
-        language,
-        fileBase64,
-        filename: file.name,
-      }),
-    });
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        body: formData,
+      });
   
-    const data = await res.json();
-    if (data.url) window.location.href = data.url;
-    else alert('Stripe error');
+      if (!res.ok) {
+        const text = await res.text();
+        console.error('❌ Server response:', text);
+        throw new Error('Stripe session creation failed');
+      }
+  
+      const data = await res.json();
+      if (!data.url) throw new Error('Missing session URL');
+  
+      if (onSuccess) onSuccess();
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('❌ Checkout error:', error);
+      alert(language === 'uk'
+        ? 'Помилка під час переходу до Stripe. Спробуйте ще раз.'
+        : 'Błąd przy przekierowaniu do Stripe. Spróbuj ponownie.');
+    }
   };
 
   return (

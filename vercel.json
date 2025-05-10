@@ -1,0 +1,12 @@
+{
+    "routes": [
+      {
+        "src": "/api/create-checkout-session",
+        "methods": ["POST"],
+        "headers": {
+          "cache-control": "no-store"
+        },
+        "continue": true
+      }
+    ]
+  }
