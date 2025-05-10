@@ -27,60 +27,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (err: any) {
-    console.error('❌ Invalid signature:', err.message);
+    console.error('❌ Invalid Stripe signature:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
-
-    const name = session.customer_details?.name || '—';
-    const email = session.customer_email || '—';
-    const payment = session.payment_method_types?.[0] || '—';
+    const name = session.metadata?.name || '—';
     const service = session.metadata?.service || '—';
-    const qty = session.metadata?.quantity || '1';
-    const total = (session.amount_total! / 100).toFixed(2);
     const fileUrl = session.metadata?.fileUrl;
+    const amount = (session.amount_total || 0) / 100;
 
-    const text = `
-🧾 *Нове замовлення (Stripe)*  
-👤 Ім’я: ${name}  
-📧 Email: ${email}  
-💳 Метод: ${payment}  
-📦 Послуга: ${service} – ${qty}x  
-💰 Сума: ${total} zł
-    `.trim();
+    const message = `
+🧾 *Нове замовлення*
+👤 Ім’я: ${name}
+📦 Послуга: ${service}
+💰 Сума: ${amount} zł
+`.trim();
 
-    try {
-      for (const chatId of TELEGRAM_CHAT_IDS) {
-        if (fileUrl && fileUrl.startsWith('http')) {
-          const form = new FormData();
-          form.append('chat_id', chatId);
-          form.append('caption', text);
-          form.append('parse_mode', 'Markdown');
-          form.append('document', fileUrl);
+    for (const chatId of TELEGRAM_CHAT_IDS) {
+      const form = new FormData();
+      form.append('chat_id', chatId);
+      form.append('parse_mode', 'Markdown');
 
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
-            method: 'POST',
-            body: form as any,
-          });
-        } else {
-          const form = new FormData();
-          form.append('chat_id', chatId);
-          form.append('text', text);
-          form.append('parse_mode', 'Markdown');
-
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            body: form as any,
-          });
-        }
+      if (fileUrl && fileUrl.startsWith('http')) {
+        form.append('document', fileUrl);
+        form.append('caption', message);
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
+          method: 'POST',
+          body: form as any,
+        });
+      } else {
+        form.append('text', message);
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          body: form as any,
+        });
       }
-
-      console.log('✅ Telegram sent');
-    } catch (err: any) {
-      console.error('❌ Telegram error:', err.message);
     }
+
+    console.log('✅ Telegram message sent');
   }
 
   res.status(200).send('ok');
