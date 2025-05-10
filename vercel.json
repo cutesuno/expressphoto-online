@@ -1,20 +1,12 @@
 {
     "routes": [
       {
-        "src": "/api/webhook",
+        "src": "/api/stripe-webhook",
         "methods": ["POST"],
         "headers": {
           "cache-control": "no-store"
         },
-        "dest": "api/webhook.js"
-      },
-      {
-        "src": "/api/webhook/",
-        "methods": ["POST"],
-        "headers": {
-          "cache-control": "no-store"
-        },
-        "dest": "api/webhook.js"
+        "dest": "/api/stripe-webhook.js"
       }
     ]
   }
