@@ -15,14 +15,6 @@
           "cache-control": "no-store"
         },
         "continue": true
-      },
-      {
-        "src": "/api/send-order",
-        "methods": ["POST"],
-        "headers": {
-          "cache-control": "no-store"
-        },
-        "continue": true
       }
     ]
   }
