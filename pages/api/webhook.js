@@ -4,7 +4,7 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 
 export const config = {
-  api: { bodyParser: false }, // ВАЖЛИВО: Stripe потребує raw body
+  api: { bodyParser: false }, // Stripe потребує сире тіло
 };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -13,7 +13,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_IDS = process.env.TELEGRAM_CHAT_IDS?.split(',') || []; // можна декілька ID
+const TELEGRAM_CHAT_IDS = process.env.TELEGRAM_CHAT_IDS?.split(',') || [];
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
@@ -22,7 +22,6 @@ export default async function handler(req, res) {
   const signature = req.headers['stripe-signature'];
 
   let event;
-
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (err) {
@@ -48,33 +47,30 @@ export default async function handler(req, res) {
 💰 Сума: ${amount} zł
     `.trim();
 
-    const form = new FormData();
-    form.append('parse_mode', 'Markdown');
-    form.append('text', text);
-
     try {
       for (const chatId of TELEGRAM_CHAT_IDS) {
         const form = new FormData();
         form.append('chat_id', chatId);
         form.append('text', text);
         form.append('parse_mode', 'Markdown');
-      
+
         const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           body: form,
         });
-      
+
         const result = await tgRes.text();
 
-    if (!tgRes.ok) {
-      console.error('❌ Telegram error:', tgRes.status, result);
-    } else {
-      console.log('✅ Telegram sent to', chatId, result);
+        if (!tgRes.ok) {
+          console.error('❌ Telegram error:', tgRes.status, result);
+        } else {
+          console.log('✅ Telegram sent to', chatId, result);
+        }
+      }
+    } catch (err) {
+      console.error('❌ Telegram exception:', err.message);
     }
   }
-} catch (err) {
-  console.error('❌ Unexpected Telegram exception:', err.message);
-}
 
   res.status(200).send('ok');
 }
