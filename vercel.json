@@ -6,7 +6,7 @@
         "headers": {
           "cache-control": "no-store"
         },
-        "dest": "/api/webhook.js"
+        "continue": true
       }
     ]
   }
