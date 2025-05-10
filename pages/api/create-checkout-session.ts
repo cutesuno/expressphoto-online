@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 
 export const config = {
-  api: { bodyParser: false }, // важливо для form-data
+  api: { bodyParser: false }, // Важливо для form-data!
 };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -16,7 +16,9 @@ const TEMP_DIR = path.join(process.cwd(), 'tmp');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   const form = formidable({ uploadDir: TEMP_DIR, keepExtensions: true });
 
@@ -30,7 +32,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { name, email, service, quantity, total, language } = fields;
   const file = files.file as formidable.File;
 
-  if (!name || !email || !service || !quantity || !total || !file) {
+  // Мінімальна перевірка
+  if (!name || !email || !service || !quantity || !total) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -53,12 +56,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order-success?lang=${language}&sessionId={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/?canceled=true`,
     metadata: {
-      service: service as string,
       name: name as string,
       email: email as string,
+      service: service as string,
       quantity: quantity.toString(),
-      filePath: file.filepath, // ← передаємо шлях до файлу
-      originalFilename: file.originalFilename || 'file',
+      ...(file && file.filepath && {
+        filePath: file.filepath,
+        originalFilename: file.originalFilename || 'file',
+      }),
     },
   });
 
