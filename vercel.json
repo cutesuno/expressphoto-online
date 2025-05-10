@@ -3,10 +3,7 @@
       {
         "src": "/api/checkout-webhook",
         "methods": ["POST"],
-        "headers": {
-          "cache-control": "no-store"
-        },
-        "continue": true
+        "dest": "/api/checkout-webhook.js"
       }
     ]
   }
