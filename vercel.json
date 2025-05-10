@@ -1,9 +1,0 @@
-{
-    "routes": [
-      {
-        "src": "/api/checkout-webhook",
-        "methods": ["POST"],
-        "dest": "/api/checkout-webhook.js"
-      }
-    ]
-  }
