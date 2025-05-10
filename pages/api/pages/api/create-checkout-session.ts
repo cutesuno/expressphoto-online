@@ -6,21 +6,20 @@ import Stripe from 'stripe';
 import { v2 as cloudinary } from 'cloudinary';
 
 export const config = {
-  api: { bodyParser: false }, // ⛔️ Важливо: raw body для formidable
+  api: { bodyParser: false }, // Вимкнено bodyParser для form-data
 };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-04-30.basil',
 });
 
-// 🧠 Cloudinary конфіг
+// Cloudinary конфігурація
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
   api_key: process.env.CLOUDINARY_API_KEY!,
   api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
-// 📁 Створити тимчасову папку, якщо нема
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
@@ -41,25 +40,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { name, email, service, quantity, total, language } = fields;
   const file = files.file as formidable.File;
 
-  if (!name || !email || !service || !quantity || !total || !file) {
+  if (!name || !email || !service || !quantity || !total) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // ☁️ Завантаження в Cloudinary
+  // Завантажити файл у Cloudinary
   let uploadedUrl = '';
   try {
-    const uploadRes = await cloudinary.uploader.upload(file.filepath, {
-      folder: 'orders',
-      public_id: file.originalFilename?.split('.')[0] || 'uploaded_file',
-      resource_type: 'auto',
-    });
-    uploadedUrl = uploadRes.secure_url;
+    if (file && file.filepath) {
+      const result = await cloudinary.uploader.upload(file.filepath, {
+        folder: 'orders',
+        resource_type: 'auto',
+        public_id: file.originalFilename?.split('.')[0],
+      });
+      uploadedUrl = result.secure_url;
+    }
   } catch (err) {
-    console.error('❌ Cloudinary upload failed:', err);
-    return res.status(500).json({ error: 'File upload failed' });
+    console.error('❌ Cloudinary upload error:', err);
+    return res.status(500).json({ error: 'Upload failed' });
   }
 
-  // 💳 Створення Stripe-сесії
+  // Створення сесії Stripe
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -80,18 +81,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order-success?lang=${language}&sessionId={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/?canceled=true`,
       metadata: {
-        service: service as string,
         name: name as string,
         email: email as string,
+        service: service as string,
         quantity: quantity.toString(),
         fileUrl: uploadedUrl,
-        originalFilename: file.originalFilename || 'file',
       },
     });
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error('❌ Stripe error:', err);
+    console.error('❌ Stripe session error:', err);
     return res.status(500).json({ error: 'Stripe session creation failed' });
   }
 }
