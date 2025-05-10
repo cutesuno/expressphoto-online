@@ -53,15 +53,15 @@ export default async function handler(req, res) {
       for (const chatId of TELEGRAM_CHAT_IDS) {
         if (fileUrl) {
           const form = new FormData();
-          form.append('chat_id', chatId);
-          form.append('caption', `${caption}\n📎 Файл: ${fileUrl}`);
-          form.append('parse_mode', 'Markdown');
-          form.append('document', fileUrl);
+form.append('chat_id', chatId);
+form.append('document', fileUrl); // Cloudinary URL
+form.append('caption', caption);
+form.append('parse_mode', 'Markdown');
 
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
-            method: 'POST',
-            body: form,
-          });
+await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
+  method: 'POST',
+  body: form,
+});
         } else {
           const form = new FormData();
           form.append('chat_id', chatId);

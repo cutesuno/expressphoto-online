@@ -1,9 +1,9 @@
 // pages/api/create-checkout-session.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import Stripe from 'stripe';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
-import Stripe from 'stripe';
 import { v2 as cloudinary } from 'cloudinary';
 
 export const config = {
