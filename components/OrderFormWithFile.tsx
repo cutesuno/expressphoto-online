@@ -41,26 +41,23 @@ export default function OrderFormWithFile({
   };
 
   const handleStripeCheckout = async () => {
-    if (!selectedService || !form.name || !form.email || !file) {
-      alert(language === 'uk' ? 'Заповніть усі поля та прикріпіть файл' : 'Wypełnij wszystkie pola i załącz plik');
+    if (!selectedService || !form.name || !form.email) {
+      alert(language === 'uk' ? 'Заповніть усі поля' : 'Wypełnij wszystkie pola');
       return;
     }
   
     try {
-      const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('email', form.email);
-      formData.append('details', form.details);
-      formData.append('time', form.time);
-      formData.append('service', selectedService.label);
-      formData.append('quantity', quantity.toString());
-      formData.append('total', totalPrice.toFixed(2));
-      formData.append('language', language);
-      formData.append('file', file);
-  
-      const res = await fetch('/api/checkout-form', {
+      const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          service: selectedService.label,
+          quantity,
+          total: totalPrice,
+          language,
+        }),
       });
   
       if (!res.ok) {
@@ -70,9 +67,12 @@ export default function OrderFormWithFile({
       }
   
       const data = await res.json();
-      if (!data.url) throw new Error('Missing session URL');
   
-      if (onSuccess) onSuccess();
+      if (!data.url) {
+        console.error('❌ Invalid Stripe response:', data);
+        throw new Error('Missing session URL');
+      }
+  
       window.location.href = data.url;
     } catch (error) {
       console.error('❌ Checkout error:', error);

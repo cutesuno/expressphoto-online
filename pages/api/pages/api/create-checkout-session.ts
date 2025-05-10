@@ -1,25 +1,26 @@
-// pages/api/create-checkout-session.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Stripe from 'stripe';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
+import Stripe from 'stripe';
 import { v2 as cloudinary } from 'cloudinary';
 
 export const config = {
-  api: { bodyParser: false },
+  api: { bodyParser: false }, // ⛔️ Важливо: raw body для formidable
 };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-04-30.basil',
 });
 
+// 🧠 Cloudinary конфіг
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
   api_key: process.env.CLOUDINARY_API_KEY!,
   api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
+// 📁 Створити тимчасову папку, якщо нема
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
@@ -44,6 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
+  // ☁️ Завантаження в Cloudinary
   let uploadedUrl = '';
   try {
     const uploadRes = await cloudinary.uploader.upload(file.filepath, {
@@ -57,6 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'File upload failed' });
   }
 
+  // 💳 Створення Stripe-сесії
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
