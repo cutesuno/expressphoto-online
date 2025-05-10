@@ -1,4 +1,3 @@
-// pages/api/webhook.ts
 import { buffer } from 'micro';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
@@ -41,6 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const service = session.metadata?.service || '—';
     const qty = session.metadata?.quantity || '1';
     const total = (session.amount_total! / 100).toFixed(2);
+    const fileUrl = session.metadata?.fileUrl;
 
     const text = `
 🧾 *Нове замовлення (Stripe)*  
@@ -53,15 +53,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       for (const chatId of TELEGRAM_CHAT_IDS) {
-        const form = new FormData();
-        form.append('chat_id', chatId);
-        form.append('text', text);
-        form.append('parse_mode', 'Markdown');
+        if (fileUrl && fileUrl.startsWith('http')) {
+          const form = new FormData();
+          form.append('chat_id', chatId);
+          form.append('caption', text);
+          form.append('parse_mode', 'Markdown');
+          form.append('document', fileUrl);
 
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          body: form as any,
-        });
+          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
+            method: 'POST',
+            body: form as any,
+          });
+        } else {
+          const form = new FormData();
+          form.append('chat_id', chatId);
+          form.append('text', text);
+          form.append('parse_mode', 'Markdown');
+
+          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            body: form as any,
+          });
+        }
       }
 
       console.log('✅ Telegram sent');
