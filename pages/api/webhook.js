@@ -4,7 +4,7 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 
 export const config = {
-  api: { bodyParser: false }, // Stripe потребує сире тіло
+  api: { bodyParser: false }, // ВАЖЛИВО: для валідації підпису Stripe
 };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -13,7 +13,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_IDS = process.env.TELEGRAM_CHAT_IDS?.split(',') || [];
+const TELEGRAM_CHAT_IDS = (process.env.TELEGRAM_CHAT_IDS || '').split(',');
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
@@ -22,10 +22,11 @@ export default async function handler(req, res) {
   const signature = req.headers['stripe-signature'];
 
   let event;
+
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (err) {
-    console.error('❌ Webhook signature verification failed:', err.message);
+    console.error('❌ Invalid Stripe signature:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -39,7 +40,7 @@ export default async function handler(req, res) {
     const qty = session.metadata?.quantity || '1';
     const amount = (session.amount_total / 100).toFixed(2);
 
-    const text = `
+    const message = `
 🧾 *Нове замовлення (Stripe)*  
 👤 Ім’я: ${name}  
 💳 Метод: ${payment}  
@@ -47,28 +48,22 @@ export default async function handler(req, res) {
 💰 Сума: ${amount} zł
     `.trim();
 
-    try {
-      for (const chatId of TELEGRAM_CHAT_IDS) {
-        const form = new FormData();
-        form.append('chat_id', chatId);
-        form.append('text', text);
-        form.append('parse_mode', 'Markdown');
+    for (const chatId of TELEGRAM_CHAT_IDS) {
+      const form = new FormData();
+      form.append('chat_id', chatId.trim());
+      form.append('text', message);
+      form.append('parse_mode', 'Markdown');
 
+      try {
         const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           body: form,
         });
-
         const result = await tgRes.text();
-
-        if (!tgRes.ok) {
-          console.error('❌ Telegram error:', tgRes.status, result);
-        } else {
-          console.log('✅ Telegram sent to', chatId, result);
-        }
+        console.log('✅ Telegram sent to', chatId, result);
+      } catch (err) {
+        console.error(`❌ Telegram error for chat ${chatId}:`, err.message);
       }
-    } catch (err) {
-      console.error('❌ Telegram exception:', err.message);
     }
   }
 
