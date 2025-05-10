@@ -1,7 +1,7 @@
 {
     "routes": [
       {
-        "src": "/api/create-checkout-session",
+        "src": "/api/checkout-form",
         "methods": ["POST"],
         "headers": {
           "cache-control": "no-store"

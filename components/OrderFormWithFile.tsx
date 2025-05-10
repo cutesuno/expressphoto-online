@@ -58,7 +58,7 @@ export default function OrderFormWithFile({
       formData.append('language', language);
       formData.append('file', file);
   
-      const res = await fetch('/api/create-checkout-session', {
+      const res = await fetch('/api/checkout-form', {
         method: 'POST',
         body: formData,
       });
