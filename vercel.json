@@ -1,8 +1,11 @@
 {
     "routes": [
       {
-        "src": "/api/webhook/?",
+        "src": "/api/webhook/?",        
         "methods": ["POST"],
+        "headers": {
+          "cache-control": "no-store"
+        },
         "dest": "/api/webhook.js"
       }
     ]
