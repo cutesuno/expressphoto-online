@@ -54,18 +54,27 @@ export default async function handler(req, res) {
 
     try {
       for (const chatId of TELEGRAM_CHAT_IDS) {
-        form.set('chat_id', chatId);
+        const form = new FormData();
+        form.append('chat_id', chatId);
+        form.append('text', text);
+        form.append('parse_mode', 'Markdown');
+      
         const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           body: form,
         });
+      
         const result = await tgRes.text();
-        console.log('✅ Telegram sent to', chatId, result);
-      }
-    } catch (err) {
-      console.error('❌ Telegram error:', err.message);
+
+    if (!tgRes.ok) {
+      console.error('❌ Telegram error:', tgRes.status, result);
+    } else {
+      console.log('✅ Telegram sent to', chatId, result);
     }
   }
+} catch (err) {
+  console.error('❌ Unexpected Telegram exception:', err.message);
+}
 
   res.status(200).send('ok');
 }
