@@ -62,19 +62,6 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
         body: formData,
       });
 
-      // Надіслати файл у Telegram одразу
-const preSubmit = new FormData();
-preSubmit.append('name', form.name);
-preSubmit.append('email', form.email);
-preSubmit.append('details', form.details);
-preSubmit.append('service', selectedService.label);
-preSubmit.append('quantity', quantity.toString());
-preSubmit.append('file', file!);
-
-await fetch('/api/pre-upload-telegram', {
-  method: 'POST',
-  body: preSubmit,
-});
 
       if (!res.ok) {
         const text = await res.text();
