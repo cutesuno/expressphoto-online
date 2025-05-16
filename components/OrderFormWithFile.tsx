@@ -63,20 +63,22 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
       console.log('📂 fileId:', fileId);
   
       // ⬇️ КРОК 2: Створення Stripe-сесії з fileId
-      const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('email', form.email);
-      formData.append('details', form.details);
-      formData.append('time', form.time);
-      formData.append('service', selectedService.label);
-      formData.append('quantity', quantity.toString());
-      formData.append('total', totalPrice.toFixed(2));
-      formData.append('language', language);
-      formData.append('fileId', fileId);
-  
-      const res = await fetch('/api/create-checkout-session', {
+      const payload = {
+        name: form.name,
+        email: form.email,
+        details: form.details,
+        time: form.time,
+        service: selectedService.label,
+        quantity,
+        total: totalPrice.toFixed(2),
+        language,
+        fileId,
+      };
+      
+      await fetch('/api/create-checkout-session', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
   
       if (!res.ok) {
