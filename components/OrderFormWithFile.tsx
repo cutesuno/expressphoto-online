@@ -46,36 +46,37 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
     }
   
     try {
-      const preForm = new FormData();
-      preForm.append('file', file);
+      // ⬇️ КРОК 1: Завантаження файлу через /api/pre-upload
+      const preUploadForm = new FormData();
+      preUploadForm.append('file', file);
   
-      const preRes = await fetch('/api/pre-upload', {
+      const preUploadRes = await fetch('/api/pre-upload', {
         method: 'POST',
-        body: preForm,
+        body: preUploadForm,
       });
   
-      if (!preRes.ok) {
-        const errText = await preRes.text();
-        console.error('❌ File upload error:', errText);
-        throw new Error('Upload failed');
+      if (!preUploadRes.ok) {
+        throw new Error('Помилка завантаження файлу');
       }
   
-      const { fileId } = await preRes.json();
+      const { fileId } = await preUploadRes.json();
+      console.log('📂 fileId:', fileId);
+  
+      // ⬇️ КРОК 2: Створення Stripe-сесії з fileId
+      const formData = new FormData();
+      formData.append('name', form.name);
+      formData.append('email', form.email);
+      formData.append('details', form.details);
+      formData.append('time', form.time);
+      formData.append('service', selectedService.label);
+      formData.append('quantity', quantity.toString());
+      formData.append('total', totalPrice.toFixed(2));
+      formData.append('language', language);
+      formData.append('fileId', fileId);
   
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          details: form.details,
-          time: form.time,
-          service: selectedService.label,
-          quantity: quantity.toString(),
-          total: totalPrice.toFixed(2),
-          language,
-          fileId,
-        }),
+        body: formData,
       });
   
       if (!res.ok) {
