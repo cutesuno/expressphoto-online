@@ -44,34 +44,49 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
       alert(language === 'uk' ? 'Заповніть усі поля та прикріпіть файл' : 'Wypełnij wszystkie pola i załącz plik');
       return;
     }
-
+  
     try {
-      const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('email', form.email);
-      formData.append('details', form.details);
-      formData.append('time', form.time);
-      formData.append('service', selectedService.label);
-      formData.append('quantity', quantity.toString());
-      formData.append('total', totalPrice.toFixed(2));
-      formData.append('language', language);
-      formData.append('file', file);
-
+      const preForm = new FormData();
+      preForm.append('file', file);
+  
+      const preRes = await fetch('/api/pre-upload', {
+        method: 'POST',
+        body: preForm,
+      });
+  
+      if (!preRes.ok) {
+        const errText = await preRes.text();
+        console.error('❌ File upload error:', errText);
+        throw new Error('Upload failed');
+      }
+  
+      const { fileId } = await preRes.json();
+  
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          details: form.details,
+          time: form.time,
+          service: selectedService.label,
+          quantity: quantity.toString(),
+          total: totalPrice.toFixed(2),
+          language,
+          fileId,
+        }),
       });
-
-
+  
       if (!res.ok) {
         const text = await res.text();
         console.error('❌ Server response:', text);
         throw new Error('Stripe session creation failed');
       }
-
+  
       const data = await res.json();
       if (!data.url) throw new Error('Missing session URL');
-
+  
       if (onSuccess) onSuccess();
       window.location.href = data.url;
     } catch (error) {

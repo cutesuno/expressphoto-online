@@ -1,20 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-04-30.basil',
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
 
-  const { name, email, service, quantity, total } = req.body;
-
-  if (!name || !email || !service || !quantity || !total) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
+  const { name, email, details, time, service, quantity, total, language, fileId } = req.body;
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -23,23 +17,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         {
           price_data: {
             currency: 'pln',
-            unit_amount: Math.round(Number(total) * 100),
-            product_data: {
-              name: service,
-              description: `Клієнт: ${name}, Email: ${email}`,
-            },
+            product_data: { name: service },
+            unit_amount: Math.round(parseFloat(total) * 100),
           },
-          quantity: Number(quantity),
+          quantity: parseInt(quantity),
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order-success?lang=${language}&sessionId={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/?canceled=true`,
+      metadata: {
+        name,
+        email,
+        details,
+        time,
+        service,
+        quantity,
+        fileId: fileId || '',
+      },
     });
 
     res.status(200).json({ url: session.url });
-  } catch (err: any) {
-    console.error('❌ Stripe error:', err.message);
-    res.status(500).json({ error: 'Stripe session creation failed' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Stripe error' });
   }
 }

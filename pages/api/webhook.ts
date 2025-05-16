@@ -1,10 +1,10 @@
-// pages/api/webhook.ts
 import { buffer } from 'micro';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
+import fs from 'fs';
+import path from 'path';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
-import fs from 'fs';
 
 export const config = {
   api: { bodyParser: false },
@@ -17,15 +17,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const TELEGRAM_CHAT_IDS = process.env.TELEGRAM_CHAT_IDS!.split(',');
+const TEMP_DIR = path.join(process.cwd(), 'tmp');
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
 
   const rawBody = await buffer(req);
   const signature = req.headers['stripe-signature'] as string;
 
   let event: Stripe.Event;
-
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (err: any) {
@@ -36,49 +36,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
 
-    const name = session.metadata?.name || '—';
-    const email = session.metadata?.email || '—';
+    const name = session.customer_details?.name || '—';
+    const email = session.customer_email || '—';
+    const payment = session.payment_method_types?.[0] || '—';
     const service = session.metadata?.service || '—';
-    const quantity = session.metadata?.quantity || '1';
-    const filePath = session.metadata?.filePath || '';
-    const originalFilename = session.metadata?.originalFilename || 'file';
+    const qty = session.metadata?.quantity || '1';
+    const fileId = session.metadata?.fileId;
     const total = (session.amount_total! / 100).toFixed(2);
 
-    const caption = `
-🧾 *Нове замовлення (Stripe)*
-👤 Ім’я: ${name}
-📧 Email: ${email}
-📦 Послуга: ${service} – ${quantity}x
+    const text = `
+🧾 *Нове замовлення (Stripe)*  
+👤 Ім’я: ${name}  
+📧 Email: ${email}  
+💳 Метод: ${payment}  
+📦 Послуга: ${service} – ${qty}x  
 💰 Сума: ${total} zł
-`.trim();
+    `.trim();
 
-    for (const chatId of TELEGRAM_CHAT_IDS) {
-      try {
-        if (filePath && fs.existsSync(filePath)) {
-          const form = new FormData();
-          form.append('chat_id', chatId);
-          form.append('caption', caption);
-          form.append('parse_mode', 'Markdown');
-          form.append('document', fs.createReadStream(filePath), originalFilename);
+    try {
+      for (const chatId of TELEGRAM_CHAT_IDS) {
+        const form = new FormData();
+        form.append('chat_id', chatId);
+        form.append('parse_mode', 'Markdown');
 
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
-            method: 'POST',
-            body: form as any,
-          });
-        } else {
-          const form = new FormData();
-          form.append('chat_id', chatId);
-          form.append('text', caption);
-          form.append('parse_mode', 'Markdown');
-
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            body: form as any,
-          });
+        if (fileId) {
+          const filePath = path.join(TEMP_DIR, fileId);
+          if (fs.existsSync(filePath)) {
+            form.append('caption', text);
+            form.append('document', fs.createReadStream(filePath));
+            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
+              method: 'POST',
+              body: form as any,
+            });
+            fs.unlinkSync(filePath); // очистка
+            continue;
+          }
         }
-      } catch (err: any) {
-        console.error('❌ Telegram send error:', err.message);
+
+        // якщо файл не знайдено — надіслати лише текст
+        form.append('text', text);
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          body: form as any,
+        });
       }
+
+      console.log('✅ Telegram sent');
+    } catch (err: any) {
+      console.error('❌ Telegram error:', err.message);
     }
   }
 
