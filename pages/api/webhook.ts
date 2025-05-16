@@ -36,13 +36,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
 
-    const name = session.customer_details?.name || '—';
-    const email = session.customer_email || '—';
+    const name = session.metadata?.name || '—';
+    const email = session.metadata?.email || '—';
     const payment = session.payment_method_types?.[0] || '—';
     const service = session.metadata?.service || '—';
     const qty = session.metadata?.quantity || '1';
-    const fileId = session.metadata?.fileId;
+    const fileId = session.metadata?.fileId || '';
     const total = (session.amount_total! / 100).toFixed(2);
+    const filePath = path.join(TEMP_DIR, fileId);
 
     const text = `
 🧾 *Нове замовлення (Stripe)*  
@@ -59,31 +60,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         form.append('chat_id', chatId);
         form.append('parse_mode', 'Markdown');
 
-        if (fileId) {
-          const filePath = path.join(TEMP_DIR, fileId);
-          if (fs.existsSync(filePath)) {
-            form.append('caption', text);
-            form.append('document', fs.createReadStream(filePath));
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
-              method: 'POST',
-              body: form as any,
-            });
-            fs.unlinkSync(filePath); // очистка
-            continue;
-          }
-        }
+        if (fileId && fs.existsSync(filePath)) {
+          console.log('📁 Sending file to Telegram:', filePath);
+          form.append('caption', text);
+          form.append('document', fs.createReadStream(filePath));
 
-        // якщо файл не знайдено — надіслати лише текст
-        form.append('text', text);
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          body: form as any,
-        });
+          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
+            method: 'POST',
+            body: form as any,
+          });
+
+          fs.unlinkSync(filePath); // 🧹 Очистка
+        } else {
+          console.warn('⚠️ File not found. Sending text only.');
+          form.append('text', text);
+
+          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            body: form as any,
+          });
+        }
       }
 
-      console.log('✅ Telegram sent');
+      console.log('✅ Telegram sent successfully');
     } catch (err: any) {
-      console.error('❌ Telegram error:', err.message);
+      console.error('❌ Telegram send error:', err.message);
     }
   }
 
