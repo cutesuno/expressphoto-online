@@ -11,6 +11,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { name, email, details, time, service, quantity, total, language, fileId } = req.body;
 
   try {
+    console.log('🧾 Stripe session payload:', {
+      name, email, details, time, service, quantity, total, fileId
+    });
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -47,6 +50,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       stack: err.stack,
       raw: err.raw,
     });
-  
     res.status(500).json({ error: 'Stripe error', message: err.message });
-  }
+}
+}
