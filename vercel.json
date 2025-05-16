@@ -7,10 +7,16 @@
       "dest": "/api/create-checkout-session"
     },
     {
+      "src": "/api/pre-upload-telegram",
+      "methods": ["POST"],
+      "headers": { "cache-control": "no-store" },
+      "dest": "/api/pre-upload-telegram"
+    },
+    {
       "src": "/api/webhook",
       "methods": ["POST"],
       "headers": { "cache-control": "no-store" },
-      "continue": true
+      "dest": "/api/webhook"
     }
   ]
-} 
+}
