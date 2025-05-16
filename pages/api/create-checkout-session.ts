@@ -11,13 +11,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { name, email, details, time, service, quantity, total, language, fileId } = req.body;
 
   try {
+    console.log('🧾 Stripe session payload:', {
+      name, email, details, time, service, quantity, total, fileId
+    });
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
           price_data: {
             currency: 'pln',
-            product_data: { name: service },
+            product_data: {
+              name: service,
+              description: `Ім'я: ${name}, Email: ${email}, Час: ${time}`,
+            },
             unit_amount: Math.round(parseFloat(total) * 100),
           },
           quantity: parseInt(quantity),
@@ -32,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         details,
         time,
         service,
-        quantity,
+        quantity: quantity.toString(),
         fileId: fileId || '',
       },
     });
