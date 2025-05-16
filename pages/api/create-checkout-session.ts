@@ -10,9 +10,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { name, email, details, time, service, quantity, total, language, fileId } = req.body;
 
-  console.log('🧾 Payload from frontend:', req.body);
-
   try {
+    console.log('🧾 Stripe session payload:', {
+      name, email, details, time, service, quantity, total, fileId
+    });
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -25,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
             unit_amount: Math.round(parseFloat(total) * 100),
           },
-          quantity: parseInt(quantity),
+          quantity: quantity ? quantity.toString() : '1',
         },
       ],
       mode: 'payment',
@@ -49,7 +50,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       stack: err.stack,
       raw: err.raw,
     });
-
-    return res.status(500).json({ error: 'Stripe error', message: err.message });
-  }
+    res.status(500).json({ error: 'Stripe error', message: err.message });
+}
 }
