@@ -75,19 +75,19 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
         fileId,
       };
       
-      await fetch('/api/create-checkout-session', {
+      const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-  
-      if (!res.ok) {
-        const text = await res.text();
+      
+      if (!response.ok) {
+        const text = await response.text();
         console.error('❌ Server response:', text);
         throw new Error('Stripe session creation failed');
       }
   
-      const data = await res.json();
+      const data = await response.json();
       if (!data.url) throw new Error('Missing session URL');
   
       if (onSuccess) onSuccess();
