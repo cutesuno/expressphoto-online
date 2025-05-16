@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
             unit_amount: Math.round(parseFloat(total) * 100),
           },
-          quantity: parseInt(quantity),
+          quantity: quantity ? quantity.toString() : '1',
         },
       ],
       mode: 'payment',
