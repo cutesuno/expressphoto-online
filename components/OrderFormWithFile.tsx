@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import { loadStripe } from '@stripe/stripe-js';
 import React from 'react';
 
+const [isLoading, setIsLoading] = useState(false);
+
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 type Props = {
@@ -12,11 +14,15 @@ type Props = {
 
 const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', details: '', time: '' });
+  const [form, setForm] = useState({ name: '', email: '', details: '', time: '', date: '' });
   const [file, setFile] = useState<File | null>(null);
   const [selectedService, setSelectedService] = useState<{ label: string; price: number } | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [totalPrice, setTotalPrice] = useState(0);
+
+  const today = new Date();
+  const minDate = today.toISOString().split('T')[0];
+  const maxDate = new Date(today.setDate(today.getDate() + 3)).toISOString().split('T')[0];
 
   const priceList = [
     { category: language === 'uk' ? 'Фото на документи' : 'Zdjęcia do dokumentów', items: [['(3,5 x 4,5) – 4x', 40], ['(3,5 x 4,5) – 6x', 45], ['(3,5 x 4,5) – 12x', 55], ['(4,5 x 6,5) – 4x', 45], ['(4,5 x 6,5) – 8x', 55], [language === 'uk' ? 'Електронна версія' : 'Wersja elektroniczna', 5]] },
@@ -38,57 +44,60 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setFile(e.target.files[0]);
   };
-
+ 
   const handleStripeCheckout = async () => {
-    if (!selectedService || !form.name || !form.email || !file) {
+    if (!selectedService || !form.name || !form.email || !file || !form.date || !form.time) {
       alert(language === 'uk' ? 'Заповніть усі поля та прикріпіть файл' : 'Wypełnij wszystkie pola i załącz plik');
       return;
     }
-  
+
     try {
-      // ⬇️ КРОК 1: Завантаження файлу через /api/pre-upload
+      setIsLoading(true);
       const preUploadForm = new FormData();
       preUploadForm.append('file', file);
-  
+
       const preUploadRes = await fetch('/api/pre-upload', {
         method: 'POST',
         body: preUploadForm,
       });
-  
+
       if (!preUploadRes.ok) {
         throw new Error('Помилка завантаження файлу');
       }
-  
+
       const { fileUrl } = await preUploadRes.json();
-  
-      // ⬇️ КРОК 2: Створення Stripe-сесії з fileId
+      console.log('📂 fileUrl:', fileUrl);
+
+      const formattedDate = new Date(form.date).toLocaleDateString('uk-UA');
+      const timeLabel = `${formattedDate} ${form.time}`;
+
       const payload = {
         name: form.name,
         email: form.email,
         details: form.details,
-        time: form.time,
+        time: timeLabel,
         service: selectedService.label,
         quantity,
         total: totalPrice.toFixed(2),
         language,
         fileUrl,
       };
-      
+
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      
+
       if (!response.ok) {
         const text = await response.text();
         console.error('❌ Server response:', text);
         throw new Error('Stripe session creation failed');
       }
-  
+
       const data = await response.json();
       if (!data.url) throw new Error('Missing session URL');
-  
+
       if (onSuccess) onSuccess();
       window.location.href = data.url;
     } catch (error) {
@@ -96,6 +105,9 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
       alert(language === 'uk'
         ? 'Помилка під час переходу до Stripe. Спробуйте ще раз.'
         : 'Błąd przy przekierowaniu do Stripe. Spróbuj ponownie.');
+    }
+    finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,14 +117,13 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
       <input name="email" placeholder={language === 'uk' ? 'Емейл або телефон' : 'Email lub telefon'} value={form.email} onChange={handleChange} required className="w-full p-3 rounded bg-zinc-900 text-white" />
       <textarea name="details" placeholder={language === 'uk' ? 'Деталі замовлення' : 'Szczegóły zamówienia'} value={form.details} onChange={handleChange} rows={3} className="w-full p-3 rounded bg-zinc-900 text-white" />
 
-      <label className="text-sm text-gray-400 block">
-        {language === 'uk' ? 'Оберіть час отримання' : 'Wybierz godzinę odbioru'}
-      </label>
+      <label className="text-sm text-gray-400 block">{language === 'uk' ? 'Оберіть дату' : 'Wybierz datę'}</label>
+      <input name="date" type="date" value={form.date} onChange={handleChange} min={minDate} max={maxDate} required className="w-full p-3 rounded bg-zinc-900 text-white" />
+
+      <label className="text-sm text-gray-400 block">{language === 'uk' ? 'Оберіть час' : 'Wybierz godzinę'}</label>
       <input name="time" type="time" value={form.time} onChange={handleChange} required className="w-full p-3 rounded bg-zinc-900 text-white" />
 
-      <label className="text-sm text-gray-400 block">
-        {language === 'uk' ? 'Оберіть послугу' : 'Wybierz usługę'}
-      </label>
+      <label className="text-sm text-gray-400 block">{language === 'uk' ? 'Оберіть послугу' : 'Wybierz usługę'}</label>
       <select onChange={(e) => {
         const [label, price] = e.target.value.split('|');
         setSelectedService({ label, price: Number(price) });
@@ -142,12 +153,25 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
       <input type="file" onChange={handleFileChange} required className="block text-sm text-white" />
 
       <button
-        type="button"
-        onClick={handleStripeCheckout}
-        className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl transition"
-      >
-        {language === 'uk' ? 'Перейти до оплати' : 'Przejdź do płatności'}
-      </button>
+  type="button"
+  onClick={handleStripeCheckout}
+  disabled={isLoading}
+  className={`w-full text-white py-3 rounded-xl transition ${
+    isLoading ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+  }`}
+>
+  {isLoading ? (
+    <span className="flex items-center justify-center gap-2">
+      <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4" fill="none" />
+        <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+      {language === 'uk' ? 'Завантаження…' : 'Ładowanie...'}
+    </span>
+  ) : (
+    language === 'uk' ? 'Перейти до оплати' : 'Przejdź do płatności'
+  )}
+</button>
     </form>
   );
 };
