@@ -81,6 +81,7 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
 
       if (!preUploadRes.ok) throw new Error('Помилка завантаження файлу');
       const { fileUrl } = await preUploadRes.json();
+      console.log('✅ FILE URL TO STRIPE:', fileUrl);
 
       const formattedDate = form.date.toLocaleDateString('uk-UA');
       const timeLabel = `${formattedDate} ${form.time}`;
