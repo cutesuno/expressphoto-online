@@ -3,10 +3,17 @@
       {
         "src": "/api/pre-upload",
         "methods": ["POST"],
-        "headers": {
-          "cache-control": "no-store"
-        },
         "dest": "/api/pre-upload"
+      },
+      {
+        "src": "/api/create-checkout-session",
+        "methods": ["POST"],
+        "dest": "/api/create-checkout-session"
+      },
+      {
+        "src": "/api/webhook",
+        "methods": ["POST"],
+        "dest": "/api/webhook"
       }
     ]
   }
