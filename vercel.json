@@ -1,0 +1,12 @@
+{
+    "routes": [
+      {
+        "src": "/api/pre-upload",
+        "methods": ["POST"],
+        "headers": {
+          "cache-control": "no-store"
+        },
+        "dest": "/api/pre-upload"
+      }
+    ]
+  }
