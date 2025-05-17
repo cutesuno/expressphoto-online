@@ -59,8 +59,7 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
         throw new Error('Помилка завантаження файлу');
       }
   
-      const { fileId } = await preUploadRes.json();
-      console.log('📂 fileId:', fileId);
+      const { fileUrl } = await preUploadRes.json();
   
       // ⬇️ КРОК 2: Створення Stripe-сесії з fileId
       const payload = {
@@ -72,7 +71,7 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
         quantity,
         total: totalPrice.toFixed(2),
         language,
-        fileId,
+        fileUrl,
       };
       
       const response = await fetch('/api/create-checkout-session', {
