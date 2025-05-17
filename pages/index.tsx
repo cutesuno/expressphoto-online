@@ -6,6 +6,7 @@ import Link from 'next/link';
 import ModalConfirm from '../components/ModalConfirm';
 import OrderFormWithFile from '../components/OrderFormWithFile';
 
+
 export default function Home() {
   const [language, setLanguage] = useState<'uk' | 'pl'>('uk');
   const [showInfo, setShowInfo] = useState(false);

@@ -1,10 +1,11 @@
-// OrderFormWithFile.tsx — фінальна версія з усім: дата, час, повний прайс, локалізація, лоадер
-
 import { useState, useEffect, ChangeEvent } from 'react';
+import { useRouter } from 'next/router';
 import { loadStripe } from '@stripe/stripe-js';
+import React from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { pl, uk } from 'date-fns/locale';
+import ukLocale from 'date-fns/locale/uk';
+import plLocale from 'date-fns/locale/pl';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -14,6 +15,7 @@ type Props = {
 };
 
 const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
+  const router = useRouter();
   const [form, setForm] = useState({ name: '', email: '', details: '', date: new Date(), time: '' });
   const [file, setFile] = useState<File | null>(null);
   const [selectedService, setSelectedService] = useState<{ label: string; price: number } | null>(null);
@@ -26,51 +28,12 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
   maxDate.setDate(today.getDate() + 2);
 
   const priceList = [
-    {
-      category: language === 'uk' ? 'Фото на документи' : 'Zdjęcia do dokumentów',
-      items: [
-        ['(3,5 x 4,5) – 4x', 40],
-        ['(3,5 x 4,5) – 6x', 45],
-        ['(3,5 x 4,5) – 12x', 55],
-        ['(4,5 x 6,5) – 4x', 45],
-        ['(4,5 x 6,5) – 8x', 55],
-        [language === 'uk' ? 'Електронна версія' : 'Wersja elektroniczna', 5],
-      ],
-    },
-    {
-      category: language === 'uk' ? 'Друк фото' : 'Drukowanie zdjęć',
-      items: [
-        ['9x13', 1.7],
-        ['10x15', 2.3],
-        ['13x18', 3],
-        ['15x21', 6],
-        ['21x30', 17],
-        ['30x40', 40],
-        ['30x45', 40],
-        ['33x48', 55],
-      ],
-    },
-    {
-      category: language === 'uk' ? 'Ксеро/друк (ч/б)' : 'Ksero/druk czarno-białe',
-      items: [
-        [language === 'uk' ? '1–10 стор.' : '1–10 str.', 1],
-        ['11–50', 0.9],
-        ['51–100', 0.8],
-        ['A3', 1.5],
-      ],
-    },
-    {
-      category: language === 'uk' ? 'Кольоровий друк' : 'Druk kolorowy',
-      items: [['A4', 2.5], ['A3', 5]],
-    },
-    {
-      category: language === 'uk' ? 'Ламінування' : 'Laminowanie',
-      items: [['A3', 14], ['A4', 7], ['A5', 4], ['A6', 3], ['6,5x9,5', 2], ['5,4x8,6', 2]],
-    },
-    {
-      category: language === 'uk' ? 'Сканування' : 'Skanowanie',
-      items: [['A3', 6], ['A4', 3]],
-    },
+    { category: language === 'uk' ? 'Фото на документи' : 'Zdjęcia do dokumentów', items: [['(3,5 x 4,5) – 4x', 40], ['(3,5 x 4,5) – 6x', 45], ['(3,5 x 4,5) – 12x', 55], ['(4,5 x 6,5) – 4x', 45], ['(4,5 x 6,5) – 8x', 55], [language === 'uk' ? 'Електронна версія' : 'Wersja elektroniczna', 5]] },
+    { category: language === 'uk' ? 'Друк фото' : 'Drukowanie zdjęć', items: [['9x13', 1.7], ['10x15', 2.3], ['13x18', 3], ['15x21', 6], ['21x30', 17], ['30x40', 40], ['30x45', 40], ['33x48', 55]] },
+    { category: language === 'uk' ? 'Ксеро/друк (ч/б)' : 'Ksero/druk czarno-białe', items: [[language === 'uk' ? '1–10 стор.' : '1–10 str.', 1], ['11–50', 0.9], ['51–100', 0.8], ['A3', 1.5]] },
+    { category: language === 'uk' ? 'Кольоровий друк' : 'Druk kolorowy', items: [['A4', 2.5], ['A3', 5]] },
+    { category: language === 'uk' ? 'Ламінування' : 'Laminowanie', items: [['A3', 14], ['A4', 7], ['A5', 4], ['A6', 3], ['6,5x9,5', 2], ['5,4x8,6', 2]] },
+    { category: language === 'uk' ? 'Сканування' : 'Skanowanie', items: [['A3', 6], ['A4', 3]] }
   ];
 
   useEffect(() => {
@@ -86,17 +49,19 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
   };
 
   const getAvailableTimes = () => {
-    const day = form.date.getDay();
-    if (day === 0) return [];
+    const selectedDay = form.date.getDay();
+    if (selectedDay === 0) return [];
     const times: string[] = [];
-    const start = day === 6 ? 10 : 9;
-    const end = day === 6 ? 13 : 17;
+    const start = selectedDay === 6 ? 10 : 9;
+    const end = selectedDay === 6 ? 13 : 17;
     for (let h = start; h < end; h++) {
       times.push(`${h.toString().padStart(2, '0')}:00`);
       times.push(`${h.toString().padStart(2, '0')}:30`);
     }
     return times;
   };
+
+  const availableTimes = getAvailableTimes();
 
   const handleStripeCheckout = async () => {
     if (!selectedService || !form.name || !form.email || !file || !form.date || !form.time) {
@@ -106,45 +71,47 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
 
     try {
       setIsLoading(true);
-      const uploadForm = new FormData();
-      uploadForm.append('file', file);
+      const preUploadForm = new FormData();
+      preUploadForm.append('file', file);
 
       const preUploadRes = await fetch('/api/pre-upload', {
         method: 'POST',
-        body: uploadForm,
+        body: preUploadForm,
       });
 
-      if (!preUploadRes.ok) throw new Error('Upload error');
+      if (!preUploadRes.ok) throw new Error('Помилка завантаження файлу');
       const { fileUrl } = await preUploadRes.json();
 
-      const timeLabel = `${form.date.toLocaleDateString('uk-UA')} ${form.time}`;
+      const formattedDate = form.date.toLocaleDateString('uk-UA');
+      const timeLabel = `${formattedDate} ${form.time}`;
 
-      const res = await fetch('/api/create-checkout-session', {
+      const payload = {
+        name: form.name,
+        email: form.email,
+        details: form.details,
+        time: timeLabel,
+        service: selectedService.label,
+        quantity,
+        total: totalPrice.toFixed(2),
+        language,
+        fileUrl,
+      };
+
+      const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          details: form.details,
-          time: timeLabel,
-          service: selectedService.label,
-          quantity,
-          total: totalPrice.toFixed(2),
-          language,
-          fileUrl,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch (err) {
-      alert('Stripe error');
+      if (!response.ok) throw new Error(await response.text());
+      const data = await response.json();
+      window.location.href = data.url;
+    } catch (error) {
+      alert('❌ Помилка при переході до Stripe.');
     } finally {
       setIsLoading(false);
     }
   };
-
-  const availableTimes = getAvailableTimes();
 
   return (
     <form className="w-full max-w-md mx-auto space-y-4">
@@ -155,18 +122,18 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
       <label className="text-sm text-gray-400 block">{language === 'uk' ? 'Оберіть дату' : 'Wybierz datę'}</label>
       <DatePicker
         selected={form.date}
-        onChange={(date) => setForm({ ...form, date: date as Date })}
+        onChange={(date: Date | null) => date && setForm({ ...form, date })}
         minDate={new Date()}
         maxDate={maxDate}
         filterDate={(date) => date.getDay() !== 0}
-        locale={language === 'uk' ? uk : pl}
+        locale={language === 'uk' ? ukLocale : plLocale}
         className="w-full p-3 rounded bg-zinc-900 text-white"
         dateFormat="dd.MM.yyyy"
       />
 
       <label className="text-sm text-gray-400 block">{language === 'uk' ? 'Оберіть час' : 'Wybierz godzinę'}</label>
       <select name="time" value={form.time} onChange={handleChange} className="w-full p-3 rounded bg-zinc-900 text-white" required>
-        <option value="" disabled>{language === 'uk' ? 'Оберіть час' : 'Wybierz godzinę'}</option>
+        <option value="" disabled>{language === 'uk' ? 'Час' : 'Godzina'}</option>
         {availableTimes.map((time) => (
           <option key={time} value={time}>{time}</option>
         ))}
@@ -190,7 +157,15 @@ const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
       <div className="flex items-end gap-4">
         <div className="flex-1">
           <label className="text-sm text-gray-400 block">{language === 'uk' ? 'Кількість' : 'Ilość'}</label>
-          <input type="number" min={1} value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value) || 1)} className="w-full p-3 rounded bg-zinc-900 text-white" required />
+          <input
+            type="number"
+            name="quantity"
+            min={1}
+            value={quantity}
+            onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+            className="w-full p-3 rounded bg-zinc-900 text-white"
+            required
+          />
         </div>
         {selectedService && (
           <p className="text-sm text-gray-300 whitespace-nowrap">
