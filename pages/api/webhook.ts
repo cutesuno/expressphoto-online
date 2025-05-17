@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
 
@@ -17,7 +18,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const TELEGRAM_CHAT_IDS = process.env.TELEGRAM_CHAT_IDS!.split(',');
-const TEMP_DIR = path.join(process.cwd(), 'tmp');
+const TEMP_DIR = os.tmpdir(); // ✅ дозволена директорія на Vercel
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
