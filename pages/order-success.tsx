@@ -36,13 +36,15 @@ export default function OrderSuccess() {
   };
 
   useEffect(() => {
+    const sessionId = new URLSearchParams(window.location.search).get('sessionId');
     if (!sessionId) return;
-
-    fetch(`/api/get-session?sessionId=${sessionId}`)
-      .then((res) => res.json())
-      .then((data) => setSession(data.session))
-      .catch(console.error);
-  }, [sessionId]);
+  
+    fetch('/api/send-to-telegram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    });
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 text-center">
