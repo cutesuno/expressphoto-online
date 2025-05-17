@@ -4,8 +4,8 @@ import { loadStripe } from '@stripe/stripe-js';
 import React from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import ukLocale from 'date-fns/locale/uk';
-import plLocale from 'date-fns/locale/pl';
+import { pl as plLocale } from 'date-fns/locale';
+import { uk as ukLocale } from 'date-fns/locale';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
