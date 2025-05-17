@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
+import https from 'https';
 
 export const config = {
   api: { bodyParser: false },
@@ -40,7 +41,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const qty = session.metadata?.quantity || '1';
     const total = (session.amount_total! / 100).toFixed(2);
     const fileUrl = session.metadata?.fileUrl || '';
-    console.log('📎 fileUrl:', fileUrl);
 
     const text = `
 🧾 *Нове замовлення (Stripe)*  
@@ -58,8 +58,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         form.append('parse_mode', 'Markdown');
 
         if (fileUrl) {
+          console.log('📎 fileUrl:', fileUrl);
+
+          const buffer = await new Promise<Buffer>((resolve, reject) => {
+            https.get(fileUrl, (res) => {
+              const chunks: Uint8Array[] = [];
+              res.on('data', (chunk) => chunks.push(chunk));
+              res.on('end', () => resolve(Buffer.concat(chunks)));
+            }).on('error', reject);
+          });
+
           form.append('caption', text);
-          form.append('document', fileUrl);
+          form.append('document', buffer, {
+            filename: 'order-file',
+            contentType: 'application/octet-stream',
+          });
+
           await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
             method: 'POST',
             body: form as any,
