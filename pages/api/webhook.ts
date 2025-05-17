@@ -40,6 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const qty = session.metadata?.quantity || '1';
     const total = (session.amount_total! / 100).toFixed(2);
     const fileUrl = session.metadata?.fileUrl || '';
+    console.log('📎 fileUrl:', fileUrl);
 
     const text = `
 🧾 *Нове замовлення (Stripe)*  
