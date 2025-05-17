@@ -3,8 +3,6 @@ import { useRouter } from 'next/router';
 import { loadStripe } from '@stripe/stripe-js';
 import React from 'react';
 
-const [isLoading, setIsLoading] = useState(false);
-
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 type Props = {
@@ -14,6 +12,7 @@ type Props = {
 
 const OrderFormWithFile: React.FC<Props> = ({ language, onSuccess }) => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', details: '', time: '', date: '' });
   const [file, setFile] = useState<File | null>(null);
   const [selectedService, setSelectedService] = useState<{ label: string; price: number } | null>(null);
